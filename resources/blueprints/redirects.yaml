@@ -1,0 +1,49 @@
+title: Redirects
+tabs:
+  main:
+    display: Main
+    sections:
+      -
+        fields:
+          -
+            handle: from
+            field:
+              type: text
+              validate:
+                - required
+              display: From
+              instructions_position: above
+              listable: hidden
+              visibility: visible
+              replicator_preview: true
+              input_type: text
+              antlers: false
+              hide_display: false
+              width: 50
+          -
+            handle: to
+            field:
+              input_type: text
+              antlers: false
+              type: text
+              validate:
+                - required
+              display: To
+              icon: text
+              listable: hidden
+              instructions_position: above
+              visibility: visible
+              replicator_preview: true
+              hide_display: false
+              width: 50
+          -
+            handle: id
+            field:
+              type: text
+              display: id
+              icon: text
+              listable: hidden
+              instructions_position: above
+              visibility: hidden
+              replicator_preview: true
+              hide_display: false
