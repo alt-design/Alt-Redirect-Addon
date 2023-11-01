@@ -20,6 +20,7 @@ export default({
 
 <template>
     <div id="alt-redirect">
+
         <publish-form
             :title="title"
             :action="action"

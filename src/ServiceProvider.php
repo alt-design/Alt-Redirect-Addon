@@ -3,9 +3,7 @@
 namespace AltDesign\AltRedirect;
 
 // Facades
-use Illuminate\Support\Facades\Event;
 use Statamic\Facades\CP\Nav;
-use Statamic\Facades\Permission;
 
 // Providers
 use Statamic\Providers\AddonServiceProvider;
