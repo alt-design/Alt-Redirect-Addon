@@ -1,8 +1,8 @@
 <?php namespace AltDesign\AltRedirect\Helpers;
 
+use Illuminate\Support\Facades\File;
 use Statamic\Facades\YAML;
 use Statamic\Filesystem\Manager;
-use Statamic\API\Folder;
 
 class Data
 {
@@ -19,11 +19,14 @@ class Data
         $this->manager = new Manager();
 
         // Get all files in the redirects folder
-        $allRedirects = \Statamic\Facades\File::getFiles('content/alt-redirect');
+        $allRedirects = File::allFiles(app_path() . '/../content/alt-redirect');
+        $allRedirects = collect($allRedirects)->sortByDesc(function ($file) {
+                return $file->getCTime();
+        });
+
         // Loop through and get the Data
         foreach ($allRedirects as $redirect) {;
-            $file = $this->manager->disk()->get($redirect);
-            $data = Yaml::parse($file);
+            $data = Yaml::parse(File::get($redirect));
             $this->data[] = $data;
         }
     }
@@ -50,15 +53,9 @@ class Data
 
     public function setAll($data)
     {
-        function trimLeadingSlash($string) {
-            return ltrim($string, '/');
-        }
-
         $this->data = $data;
-        $from = str_replace("/", "-", trimLeadingSlash($data['from']));
-        $to = str_replace("/", "-",trimLeadingSlash($data['to']));
 
-        $this->manager->disk()->put('content/alt-redirect/' . $from . '_' . $to . '_' . $data['id'] . '.yaml', Yaml::dump($this->data));
+        $this->manager->disk()->put('content/alt-redirect/' . base64_encode($data['from']) . '.yaml', Yaml::dump($this->data));
     }
 
 }

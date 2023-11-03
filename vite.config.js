@@ -6,8 +6,8 @@ export default defineConfig({
     plugins: [
         laravel({
             input: [
-                'resources/js/addon.js',
-                'resources/css/addon.css'
+                'resources/js/alt-redirect-addon.js',
+                'resources/css/alt-redirect-addon.css'
             ],
             publicDirectory: 'resources/dist',
         }),

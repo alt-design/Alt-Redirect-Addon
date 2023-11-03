@@ -5,5 +5,7 @@ Route::group(['middleware' => ['statamic.cp.authenticated'], 'namespace' => 'Alt
     // Settings
     Route::get('/alt-design/alt-redirect/', 'AltRedirectController@index')->name('alt-redirect.index');
     Route::post('/alt-design/alt-redirect/', 'AltRedirectController@create')->name('alt-redirect.create');
-    Route::get('/api/content/', 'AltRedirectController@getContent');
+
+    Route::post('/alt-design/alt-redirect/delete', 'AltRedirectController@delete')->name('alt-redirect.delete');
+
 });

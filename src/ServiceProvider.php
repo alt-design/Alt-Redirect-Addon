@@ -17,10 +17,16 @@ class ServiceProvider extends AddonServiceProvider
 
     protected $vite = [
         'input' => [
-            'resources/js/addon.js',
-            'resources/css/addon.css'
+            'resources/js/alt-redirect-addon.js',
+            'resources/css/alt-redirect-addon.css'
         ],
         'publicDirectory' => 'resources/dist',
+    ];
+
+    protected $middlewareGroups = [
+        'web' => [
+            \AltDesign\AltRedirect\Http\Middleware\CheckForRedirects::class,
+        ]
     ];
 
     public function addToNav()

@@ -19,7 +19,7 @@ tabs:
               input_type: text
               antlers: false
               hide_display: false
-              width: 50
+              width: 33
           -
             handle: to
             field:
@@ -35,7 +35,29 @@ tabs:
               visibility: visible
               replicator_preview: true
               hide_display: false
-              width: 50
+              width: 33
+          -
+            handle: redirect_type
+            field:
+              options:
+                301: null
+                302: null
+              taggable: false
+              push_tags: false
+              multiple: false
+              clearable: false
+              searchable: true
+              cast_booleans: false
+              type: select
+              display: 'Redirect Type'
+              icon: select
+              listable: hidden
+              instructions_position: above
+              visibility: visible
+              replicator_preview: true
+              hide_display: false
+              width: 33
+              default: '301'
           -
             handle: id
             field:

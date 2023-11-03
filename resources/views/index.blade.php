@@ -2,7 +2,6 @@
 
 @section('content')
     <div id="alt-redirect-app" >
-        <!--data-content="{{ json_encode($data) }}"-->
         <alt-redirect
             title="Alt Redirect"
             action="{{ cp_route('alt-redirect.create') }}"
@@ -12,7 +11,7 @@
             :items="{{ json_encode($data) }}"
         ></alt-redirect>
 
-        <!-- @saved="Statamic.$store.commit('publish/base/setValues', $data)" -->
+        <!--  -->
     </div>
 
     <!--<div class="card overflow-hidden p-0">
