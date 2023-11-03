@@ -1,5 +1,7 @@
 {
     "name": "alt-design/alt-redirect",
+    "description": "Alt Redirect addon, add Redirects to your site",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "AltDesign\\AltRedirect\\": "src"
