@@ -1,14 +1,13 @@
 # Alt Redirect
 
-> Alt Redirect is a Statamic addon that does something pretty neat.
+> Ez pz redirects, simple, spicy and nicey.
 
 ## Features
 
 This addon does:
 
-- This
-- And this
-- And even this
+- Redirects to and from
+- Set the status of redirects
 
 ## How to Install
 
@@ -18,6 +17,7 @@ You can search for this addon in the `Tools > Addons` section of the Statamic co
 composer require alt-design/alt-redirect
 ```
 
-## How to Use
+## Coming Soon
 
-Here's where you can explain how to use this wonderful addon.
+- Import + Export of redirects
+- Regex redirects
