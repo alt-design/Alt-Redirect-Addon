@@ -18,6 +18,11 @@ class Data
         // New up Stat File Manager
         $this->manager = new Manager();
 
+        // Check redirect folder exists
+        if (!$this->manager->disk()->exists('content/alt-redirect')) {
+            $this->manager->disk()->makeDirectory('content/alt-redirect');
+        }
+
         // Get all files in the redirects folder
         $allRedirects = File::allFiles(app_path() . '/../content/alt-redirect');
         $allRedirects = collect($allRedirects)->sortByDesc(function ($file) {
