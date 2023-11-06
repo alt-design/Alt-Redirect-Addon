@@ -44,3 +44,4 @@ class ServiceProvider extends AddonServiceProvider
         $this->addToNav();
     }
 }
+
