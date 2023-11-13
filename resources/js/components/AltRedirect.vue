@@ -45,7 +45,7 @@ export default({
         },
         deleteRedirect(from, id) {
             if (confirm('Are you sure you want to delete this redirect?')) {
-                Statamic.$axios.post('/cp/alt-design/alt-redirect/delete', {
+                Statamic.$axios.post(cp_url('alt-design/alt-redirect/delete'), {
                         from: from,
                         id: id
                     }).then(res => {
