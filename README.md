@@ -8,6 +8,8 @@ This addon does:
 
 - Redirects to and from
 - Set the status of redirects
+- Regex Redirects
+- Imports and Exports
 
 ## How to Install
 
@@ -16,8 +18,3 @@ You can search for this addon in the `Tools > Addons` section of the Statamic co
 ``` bash
 composer require alt-design/alt-redirect
 ```
-
-## Coming Soon
-
-- Import + Export of redirects
-- Regex redirects
