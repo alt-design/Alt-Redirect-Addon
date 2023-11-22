@@ -7,7 +7,7 @@ Route::group(['middleware' => ['statamic.cp.authenticated'], 'namespace' => 'Alt
     Route::post('/alt-design/alt-redirect/', 'AltRedirectController@create')->name('alt-redirect.create');
 
     Route::post('/alt-design/alt-redirect/delete', 'AltRedirectController@delete')->name('alt-redirect.delete');
-    Route::post('/alt-design/alt-redirect/export', 'AltRedirectController@export')->name('alt-redirect.export');
+    Route::get('/alt-design/alt-redirect/export', 'AltRedirectController@export')->name('alt-redirect.export');
     Route::post('/alt-design/alt-redirect/import', 'AltRedirectController@import')->name('alt-redirect.import');
 
 });

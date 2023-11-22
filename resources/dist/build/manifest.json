@@ -4,15 +4,8 @@
     "isEntry": true,
     "src": "resources/css/alt-redirect-addon.css"
   },
-  "resources/js/alt-redirect-addon.css": {
-    "file": "assets/alt-redirect-addon-e3b0c442.css",
-    "src": "resources/js/alt-redirect-addon.css"
-  },
   "resources/js/alt-redirect-addon.js": {
-    "css": [
-      "assets/alt-redirect-addon-e3b0c442.css"
-    ],
-    "file": "assets/alt-redirect-addon-549a0129.js",
+    "file": "assets/alt-redirect-addon-3ba58e4a.js",
     "isEntry": true,
     "src": "resources/js/alt-redirect-addon.js"
   }

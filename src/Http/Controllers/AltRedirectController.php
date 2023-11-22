@@ -2,13 +2,11 @@
 namespace AltDesign\AltRedirect\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
-use Illuminate\Http\Response;
-use Statamic\Facades\Blueprint;
-use Statamic\Facades\File;
-use AltDesign\AltRedirect\Helpers\Data;
-use Statamic\Facades\YAML;
 use Statamic\Filesystem\Manager;
+
+use Statamic\Facades\Blueprint;
+
+use AltDesign\AltRedirect\Helpers\Data;
 
 class AltRedirectController
 {
@@ -69,8 +67,8 @@ class AltRedirectController
         $manager = new Manager();
         try {
             $manager->disk()->delete('content/alt-redirect/' . hash( 'sha512', base64_encode($request->from)) . '.yaml');
-        } catch (err) {
-            $manager->disk()->delete('content/alt-redirect/' . hash( 'sha512', base64_encode($request->from)) . '.yaml');
+        } catch (\Exception $e) {
+            $manager->disk()->delete('content/alt-redirect/' . base64_encode($request->from) . '.yaml');
         }
 
         $data = new Data('redirects');
@@ -83,24 +81,24 @@ class AltRedirectController
 
     public function export(Request $request)
     {
-        $data = $request->get('data');
-        $filePath = storage_path('routes.csv'); // Adjust the path as needed
+        $data = new Data('redirects');
 
-        $handle = fopen($filePath, 'w');
-        fputcsv($handle, ['from', 'to', 'redirect_type', 'id']);
+        $callback = function() use ($data) {
+            $df = fopen("php://output", 'w');
 
-        // Use the data from the request instead of fetching from the database
-        foreach ($data as $row) {
-            fputcsv($handle, [$row['from'], $row['to'], $row['redirect_type'], $row['id']]); // Adjust as per your data structure
-        }
-        fclose($handle);
+            fputcsv($df, ['from', 'to', 'redirect_type', 'id']);
 
-        // Read the file's content
-        $file = File::get($filePath);
+            // Use the data from the request instead of fetching from the database
+            foreach ($data->data as $row) {
+                fputcsv($df, [$row['from'], $row['to'], $row['redirect_type'], $row['id']]); // Adjust as per your data structure
+            }
 
-        // Create the response with the file content
-        return response()->download($filePath, 'routes.csv', [
+            fclose($df);
+        };
+
+        return response()->stream($callback, 200, [
             'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="redirects_'.date('Y-m-d\_H:i:s').'.csv"',
         ]);
     }
     public function import(Request $request)
