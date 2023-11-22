@@ -65,11 +65,8 @@ class AltRedirectController
     public function delete(Request $request)
     {
         $manager = new Manager();
-        try {
-            $manager->disk()->delete('content/alt-redirect/' . hash( 'sha512', base64_encode($request->from)) . '.yaml');
-        } catch (\Exception $e) {
-            $manager->disk()->delete('content/alt-redirect/' . base64_encode($request->from) . '.yaml');
-        }
+        $manager->disk()->delete('content/alt-redirect/' . hash( 'sha512', base64_encode($request->from)) . '.yaml');
+        $manager->disk()->delete('content/alt-redirect/' . base64_encode($request->from) . '.yaml');
 
         $data = new Data('redirects');
         $values = $data->all();
