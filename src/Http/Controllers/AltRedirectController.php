@@ -13,6 +13,9 @@ class AltRedirectController
 
     public function index()
     {
+        // Grab the old directory just in case
+        $oldDirectory = with(new Blueprint)->directory();
+
         //Publish form
         // Get an array of values
         $data = new Data('redirects');
@@ -27,6 +30,9 @@ class AltRedirectController
         // Pre-process the values.
         $fields = $fields->preProcess();
 
+        // Reset the directory to the old one
+        with(new Blueprint)->setDirectory($oldDirectory);
+
         return view('alt-redirect::index', [
             'blueprint' => $blueprint->toPublishArray(),
             'values' => $fields->values(),
@@ -37,6 +43,9 @@ class AltRedirectController
 
     public function create(Request $request)
     {
+
+        // Grab the old directory just in case
+        $oldDirectory = with(new Blueprint)->directory();
 
         $data = new Data('redirects');
 
@@ -56,6 +65,9 @@ class AltRedirectController
 
         $data = new Data('redirects');
         $values = $data->all();
+
+        // Reset the directory to the old one
+        with(new Blueprint)->setDirectory($oldDirectory);
 
         return [
             'data' => $values
