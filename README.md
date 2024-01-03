@@ -44,7 +44,7 @@ To :
 /new-page?wildcard=$1
 ```
 
-the '$1' elements are arranged in the order the corresponding '(.*)' appeared in the 'From' URL, this allows rearranging the regexed fields in the 'To' URL.
+the '$x' (where x is a number) elements are arranged in the order the corresponding '(.*)' appeared in the 'From' URL, this allows rearranging the regexed fields in the 'To' URL.
 
 ## Questions etc
 
