@@ -19,7 +19,7 @@ class AltRedirectController
         $values = $data->all();
 
         // Get a blueprint.
-        $blueprint = Blueprint::setDirectory(__DIR__ . '/../../../resources/blueprints')->find('redirects');
+        $blueprint = with(new Blueprint)->setDirectory(__DIR__ . '/../../../resources/blueprints')->find('redirects');
         // Get a Fields object
         $fields = $blueprint->fields();
         // Add the values to the object
@@ -41,7 +41,7 @@ class AltRedirectController
         $data = new Data('redirects');
 
         // Get a blueprint.
-        $blueprint = Blueprint::setDirectory(__DIR__ . '/../../../resources/blueprints')->find('redirects');
+        $blueprint = with(new Blueprint)->setDirectory(__DIR__ . '/../../../resources/blueprints')->find('redirects');
 
         // Get a Fields object
         $fields = $blueprint->fields();
