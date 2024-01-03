@@ -59,3 +59,10 @@ Also - check out our other addons!
 ## Postcardware
 
 Send us a postcard from your hometown if you like this addon. We love getting mail from other cool peeps!
+
+Alt Design  
+278 Uttoxeter New Rd  
+Derby  
+DE22 3LN  
+UK  
+
