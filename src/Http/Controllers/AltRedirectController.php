@@ -4,7 +4,7 @@ namespace AltDesign\AltRedirect\Http\Controllers;
 use Illuminate\Http\Request;
 use Statamic\Filesystem\Manager;
 
-use Statamic\Facades\Blueprint;
+use Statamic\Fields\BlueprintRepository as Blueprint;
 
 use AltDesign\AltRedirect\Helpers\Data;
 
