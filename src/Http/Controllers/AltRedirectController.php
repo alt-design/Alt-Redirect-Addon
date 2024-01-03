@@ -4,7 +4,8 @@ namespace AltDesign\AltRedirect\Http\Controllers;
 use Illuminate\Http\Request;
 use Statamic\Filesystem\Manager;
 
-use Statamic\Fields\BlueprintRepository as Blueprint;
+use Statamic\Fields\BlueprintRepository;
+use Statamic\Fields\Blueprint;
 
 use AltDesign\AltRedirect\Helpers\Data;
 
@@ -14,15 +15,15 @@ class AltRedirectController
     public function index()
     {
         // Grab the old directory just in case
-        $oldDirectory = with(new Blueprint)->directory();
+        $oldDirectory = Blueprint::directory();
 
         //Publish form
         // Get an array of values
         $data = new Data('redirects');
         $values = $data->all();
 
-        // Get a blueprint.
-        $blueprint = with(new Blueprint)->setDirectory(__DIR__ . '/../../../resources/blueprints')->find('redirects');
+        // Get a blueprint.So
+        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__ . '/../../../resources/blueprints')->find('redirects');
         // Get a Fields object
         $fields = $blueprint->fields();
         // Add the values to the object
@@ -31,7 +32,7 @@ class AltRedirectController
         $fields = $fields->preProcess();
 
         // Reset the directory to the old one
-        with(new Blueprint)->setDirectory($oldDirectory);
+        Blueprint::setDirectory($oldDirectory);
 
         return view('alt-redirect::index', [
             'blueprint' => $blueprint->toPublishArray(),
@@ -45,12 +46,12 @@ class AltRedirectController
     {
 
         // Grab the old directory just in case
-        $oldDirectory = with(new Blueprint)->directory();
+        $oldDirectory = Blueprint::directory();
 
         $data = new Data('redirects');
 
         // Get a blueprint.
-        $blueprint = with(new Blueprint)->setDirectory(__DIR__ . '/../../../resources/blueprints')->find('redirects');
+        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__ . '/../../../resources/blueprints')->find('redirects');
 
         // Get a Fields object
         $fields = $blueprint->fields();
@@ -67,7 +68,7 @@ class AltRedirectController
         $values = $data->all();
 
         // Reset the directory to the old one
-        with(new Blueprint)->setDirectory($oldDirectory);
+        Blueprint::setDirectory($oldDirectory);
 
         return [
             'data' => $values
