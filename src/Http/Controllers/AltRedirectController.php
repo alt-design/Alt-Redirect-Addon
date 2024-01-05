@@ -96,11 +96,11 @@ class AltRedirectController
         $callback = function() use ($data) {
             $df = fopen("php://output", 'w');
 
-            fputcsv($df, ['from', 'to', 'redirect_type', 'id']);
+            fputcsv($df, ['from', 'to', 'redirect_type', 'sites', 'id']);
 
             // Use the data from the request instead of fetching from the database
             foreach ($data->data as $row) {
-                fputcsv($df, [$row['from'], $row['to'], $row['redirect_type'], $row['id']]); // Adjust as per your data structure
+                fputcsv($df, [$row['from'], $row['to'], $row['redirect_type'], is_array($row['sites']) ? implode(',', $row['sites']) : $row['sites'], $row['id']]); // Adjust as per your data structure
             }
 
             fclose($df);
@@ -123,7 +123,8 @@ class AltRedirectController
                     'from' => $row[0],
                     'to' => $row[1],
                     'redirect_type' => $row[2],
-                    'id' => $row[3] ?? uniqid(),
+                    'sites' => explode(',', $row[3]),
+                    'id' => $row[4] ?? uniqid(),
                 ];
                 foreach ($currentData as $rdKey => $redirect) {
                     if ($redirect['id'] === $temp['id'] || $redirect['from'] === $temp['from']) {

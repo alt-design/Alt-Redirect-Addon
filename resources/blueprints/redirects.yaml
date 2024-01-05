@@ -19,7 +19,7 @@ tabs:
               input_type: text
               antlers: false
               hide_display: false
-              width: 33
+              width: 50
           -
             handle: to
             field:
@@ -35,13 +35,15 @@ tabs:
               visibility: visible
               replicator_preview: true
               hide_display: false
-              width: 33
+              width: 50
           -
             handle: redirect_type
             field:
               options:
                 301: null
                 302: null
+                307: null
+                308: null
               taggable: false
               push_tags: false
               multiple: false
@@ -56,8 +58,24 @@ tabs:
               visibility: visible
               replicator_preview: true
               hide_display: false
-              width: 33
+              width: 50
               default: '301'
+          -
+            handle: sites
+            field:
+              mode: select
+              type: sites
+              display: Sites
+              validate:
+                - required
+              icon: sites
+              localizable: false
+              listable: hidden
+              instructions_position: above
+              visibility: visible
+              replicator_preview: true
+              hide_display: false
+              width: 50
           -
             handle: id
             field:
