@@ -134,6 +134,9 @@ export default ({
                         <th class="group to-column pr-8">
                             <span>Type</span>
                         </th>
+                        <th class="group to-column pr-8">
+                            <span>Sites</span>
+                        </th>
                         <th class="actions-column"></th>
                     </tr>
                     </thead>
@@ -147,6 +150,9 @@ export default ({
                         </td>
                         <td>
                             {{ item.redirect_type }}
+                        </td>
+                        <td>
+                            {{ item.sites.join(', ') }}
                         </td>
                         <td>
                             <button @click="deleteRedirect(item.from, item.id)" class="btn"

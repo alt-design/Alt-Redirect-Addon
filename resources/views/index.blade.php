@@ -31,7 +31,9 @@
             @foreach ($data as $key => $value)
                 <tr class="redirect-row outline-none">
                     @foreach ($value as $key => $value)
-                        @if ($key !== 'id')
+                        @if($key === 'sites')
+                            <td style="width:50%;">{{ implode(', ', $value) }}</td>
+                        @elseif ($key !== 'id')
                             <td style="width:50%;">{{ $value }}</td>
                         @endif
                     @endforeach
