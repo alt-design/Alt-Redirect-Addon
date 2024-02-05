@@ -122,26 +122,26 @@ export default ({
                 <input type="text" class="input-text" v-model="search" placeholder="Search">
             </div>
             <div class="px-2">
-                <table data-size="sm" tabindex="0" class="data-table">
-                    <thead>
+                <table data-size="sm" tabindex="0" class="data-table" style="table-layout: fixed">
+                <thead>
                     <tr>
-                        <th class="group from-column sortable-column">
+                        <th class="group from-column sortable-column" style="width:33%">
                             <span>From</span>
                         </th>
-                        <th class="group to-column pr-8">
+                        <th class="group from-column sortable-column pr-8 w-24" style="width:33%">
                             <span>To</span>
                         </th>
-                        <th class="group to-column pr-8">
+                        <th class="group to-column pr-8" style="width:8%">
                             <span>Type</span>
                         </th>
                         <th class="group to-column pr-8">
                             <span>Sites</span>
                         </th>
-                        <th class="actions-column"></th>
+                        <th class="actions-column" style="width:13.4%"></th>
                     </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="item in itemsSliced" :key="item.id">
+                </thead>
+                <tbody>
+                    <tr v-for="item in itemsSliced" :key="item.id" style="width : 100%; overflow: clip">
                         <td>
                             {{ item.from }}
                         </td>
@@ -160,8 +160,8 @@ export default ({
                             </button>
                         </td>
                     </tr>
-                    </tbody>
-                </table>
+                </tbody>
+            </table>
             </div>
             <div class="pagination text-sm py-4 px-4 flex items-center justify-between">
                 <div class="w-1/3 flex items-center">
