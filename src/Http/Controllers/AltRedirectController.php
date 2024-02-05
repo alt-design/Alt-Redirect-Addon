@@ -123,7 +123,7 @@ class AltRedirectController
                     'from' => $row[0],
                     'to' => $row[1],
                     'redirect_type' => $row[2],
-                    'sites' => explode(',', $row[3]),
+                    'sites' => isset($row[3]) ? explode(',', $row[3]) : false,
                     'id' => $row[4] ?? uniqid(),
                 ];
                 foreach ($currentData as $rdKey => $redirect) {
