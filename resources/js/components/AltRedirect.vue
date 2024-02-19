@@ -152,7 +152,7 @@ export default ({
                             {{ item.redirect_type }}
                         </td>
                         <td>
-                            {{ item.sites && item.sites.length ? item.sites.join(', ') : "Unknown" }}
+                            {{ (item.sites && item.sites.length) ? item.sites.join(', ') : "Unknown" }}
                         </td>
                         <td>
                             <button @click="deleteRedirect(item.from, item.id)" class="btn"
