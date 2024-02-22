@@ -13,7 +13,7 @@ class Data
     public $data = [];
     public $regexData = [];
 
-    public function __construct($type)
+    public function __construct($type, $onlyRegex = false)
     {
         $this->type = $type;
 
@@ -28,15 +28,17 @@ class Data
             $this->manager->disk()->makeDirectory('content/alt-redirect/alt-regex');
         }
 
-        $allRedirects = File::allFiles(base_path('/content/alt-redirect'));
-        $allRedirects = collect($allRedirects)->sortByDesc(function ($file) {
-            return $file->getCTime();
-        });
-        foreach ($allRedirects as $redirect) {
-            $data = Yaml::parse(File::get($redirect));
-            $this->data[] = $data;
+        if(!$onlyRegex) {
+            $allRedirects = File::allFiles(base_path('/content/alt-redirect'));
+            $allRedirects = collect($allRedirects)->sortByDesc(function ($file) {
+                return $file->getCTime();
+            });
+            foreach ($allRedirects as $redirect) {
+                $data = Yaml::parse(File::get($redirect));
+                $this->data[] = $data;
+            }
         }
-        
+
         $allRegexRedirects = File::allFiles(base_path('/content/alt-redirect/alt-regex'));
         $allRegexRedirects = collect($allRegexRedirects)->sortBy(function ($file) {
             return $file->getCTime();

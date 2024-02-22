@@ -37,7 +37,7 @@ class CheckForRedirects
             }
         }
 
-        $data = new Data('redirect');
+        $data = new Data('redirect', true);
         foreach ($data->regexData as $redirect) {
             if (preg_match('#' . $redirect['from'] . '#', $uri)) {
                 $redirectTo = preg_replace('#' . $redirect['from'] . '#', $redirect['to'], $uri);
