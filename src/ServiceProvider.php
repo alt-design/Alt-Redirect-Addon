@@ -4,6 +4,7 @@ namespace AltDesign\AltRedirect;
 
 // Facades
 use Statamic\Facades\CP\Nav;
+use Statamic\Facades\Permission;
 
 // Providers
 use Statamic\Providers\AddonServiceProvider;
@@ -40,9 +41,21 @@ class ServiceProvider extends AddonServiceProvider
         });
     }
 
+    /**
+     * Register our permissions, so we can control who can see the settings.
+     *
+     * @return void
+     */
+    public function registerPermissions()
+    {
+        Permission::register('view alt-redirect')
+                  ->label('View Alt Redirect Settings');
+    }
+
     public function bootAddon()
     {
         $this->addToNav();
+        $this->registerPermissions();
     }
 }
 
