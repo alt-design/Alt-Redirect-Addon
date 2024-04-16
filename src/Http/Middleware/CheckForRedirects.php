@@ -37,8 +37,13 @@ class CheckForRedirects
         foreach($possibleSimple as $simple) {
             if (\Statamic\Facades\File::exists('content/alt-redirect/' . $simple . '.yaml')) {
                 $redirect = Yaml::parse(\Statamic\Facades\File::get('content/alt-redirect/' . $simple . '.yaml'));
+                $to = $redirect['to'] ?? '/';
+                //There's no need to redirect.
+                if ($to === $uri || $to === $permuURI ) {
+                    return $next($request);
+                }
                 if (!($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
-                    return redirect(($redirect['to'] ?? '/'), $redirect['redirect_type'] ?? 301);
+                    return redirect($to , $redirect['redirect_type'] ?? 301);
                 }
             }
         }
