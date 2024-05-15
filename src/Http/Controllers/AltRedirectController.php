@@ -1,6 +1,7 @@
 <?php
 namespace AltDesign\AltRedirect\Http\Controllers;
 
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Statamic\Filesystem\Manager;
 
@@ -46,10 +47,6 @@ class AltRedirectController
 
     public function create(Request $request)
     {
-
-        // Grab the old directory just in case
-//        $oldDirectory = Blueprint::directory();
-
         $data = new Data('redirects');
 
         // Get a blueprint.
@@ -58,19 +55,30 @@ class AltRedirectController
         // Get a Fields object
         $fields = $blueprint->fields();
 
-        // Add the values to the object
+        // Add the values to the array
         $arr = $request->all();
         $arr['id'] = uniqid();
+
+        // Avoid looping redirects (caught by validation, but give a more helpful error)
+        if ($arr['to'] === $arr['from']) {
+            $response = [
+                'message' =>"'To' and 'From' addresses cannot be identical",
+                "errors" => [
+                    "from" => ["This field must be unique."],
+                    "to" => ["This field must be unique."],
+                ],
+            ];
+            return response()->json($response, 422);
+        }
+
         $fields = $fields->addValues($arr);
         $fields->validate();
+
 
         $data->setAll($fields->process()->values()->toArray());
 
         $data = new Data('redirects');
         $values = $data->all();
-
-        // Reset the directory to the old one
-//        Blueprint::setDirectory($oldDirectory);
 
         return [
             'data' => $values
@@ -128,6 +136,10 @@ class AltRedirectController
                     'sites' => isset($row[3]) ? explode(',', $row[3]) : false,
                     'id' => $row[4] ?? uniqid(),
                 ];
+                // Skip the redirect if it'll create an infinite loop (handles empty redirects too)
+                if ($temp['to'] === $temp['from']){
+                    continue;
+                }
                 foreach ($currentData as $rdKey => $redirect) {
                     if ($redirect['id'] === $temp['id'] || $redirect['from'] === $temp['from']) {
                         $currentData[$rdKey] = $temp;

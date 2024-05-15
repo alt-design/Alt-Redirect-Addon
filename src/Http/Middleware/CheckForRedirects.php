@@ -18,25 +18,37 @@ class CheckForRedirects
      */
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
-        //Handle simple redirects
+        // Grab uri, make alternate / permutation
         $uri = $request->getRequestUri();
-        $b64 = base64_encode($uri);
-        $toCheck = hash( 'sha512', $b64);
+        if (str_ends_with($uri, '/')) {
+            $permuURI = substr($uri, 0, strlen($uri) - 1);
+        } else {
+            $permuURI = $uri . '/';
+        }
 
-        if (\Statamic\Facades\File::exists('content/alt-redirect/' . $toCheck . '.yaml')) {
-            $redirect = Yaml::parse(\Statamic\Facades\File::get('content/alt-redirect/' . $toCheck . '.yaml'));
-            if (!($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
-                return redirect(($redirect['to'] ?? '/'), $redirect['redirect_type'] ?? 301);
+        //Build all potential versions
+        $possibleSimple = [];
+        $possibleSimple[] = $b64 = base64_encode($uri);
+        $possibleSimple[] = hash( 'sha512', $b64);
+        $possibleSimple[] = $permuB64 = base64_encode($permuURI);
+        $possibleSimple[] = hash( 'sha512', $permuB64);
+
+        //Check potentials
+        foreach($possibleSimple as $simple) {
+            if (\Statamic\Facades\File::exists('content/alt-redirect/' . $simple . '.yaml')) {
+                $redirect = Yaml::parse(\Statamic\Facades\File::get('content/alt-redirect/' . $simple . '.yaml'));
+                $to = $redirect['to'] ?? '/';
+                //There's no need to redirect.
+                if ($to === $uri || $to === $permuURI ) {
+                    return $next($request);
+                }
+                if (!($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
+                    return redirect($to , $redirect['redirect_type'] ?? 301);
+                }
             }
         }
 
-        if (\Statamic\Facades\File::exists('content/alt-redirect/' . $b64 . '.yaml')) {
-            $redirect = Yaml::parse(\Statamic\Facades\File::get('content/alt-redirect/' . $b64 . '.yaml'));
-            if (!($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
-                return redirect(($redirect['to'] ?? '/'), $redirect['redirect_type'] ?? 301);
-            }
-        }
-
+        //Regex checks
         $data = new Data('redirect', true);
         foreach ($data->regexData as $redirect) {
             if (preg_match('#' . $redirect['from'] . '#', $uri)) {
@@ -47,6 +59,7 @@ class CheckForRedirects
             }
         }
 
+        //No redirect
         return $next($request);
     }
 }
