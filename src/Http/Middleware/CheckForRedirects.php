@@ -43,7 +43,7 @@ class CheckForRedirects
                     return $next($request);
                 }
                 if (!($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
-                    return redirect($to , $redirect['redirect_type'] ?? 301);
+                    return redirect($to , $redirect['redirect_type'] ?? 301, config('alt-redirect.headers', []));
                 }
             }
         }
@@ -54,7 +54,7 @@ class CheckForRedirects
             if (preg_match('#' . $redirect['from'] . '#', $uri)) {
                 $redirectTo = preg_replace('#' . $redirect['from'] . '#', $redirect['to'], $uri);
                 if (!($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
-                    return redirect($redirectTo ?? '/', $redirect['redirect_type'] ?? 301);
+                    return redirect($redirectTo ?? '/', $redirect['redirect_type'] ?? 301, config('alt-redirect.headers', []));
                 }
             }
         }
