@@ -6,6 +6,7 @@
 
 - Redirects to and from
 - Set the status of redirects
+- Supports headers on redirects
 - Regex Redirects
 - Imports and Exports
 
@@ -19,32 +20,41 @@ composer require alt-design/alt-redirect
 
 ## Basic usage
 
-### Simple redirects 
+### Simple redirects
 Just take a request to one URL and redirect to a new url, for example
 
-From : 
+From :
 ```
 /old-page
 ```
-To : 
+To :
 ```
 /new-page
 ```
 
-### Regex redirects 
+### Regex redirects
 These, other hand, allow much richer redirect functionality.   
 Lets say you changed a wildcard URL path to be a query parameter on a new page, this can done like so
 
-From : 
+From :
 ```
 /old-page/(.*)
 ```
-To : 
+To :
 ```
 /new-page?wildcard=$1
 ```
 
 the '$x' (where x is a number) elements are arranged in the order the corresponding '(.*)' appeared in the 'From' URL, this allows rearranging the regexed fields in the 'To' URL.
+
+### Headers on redirect
+You can add headers to the redirect response using the addon's config file. To get started, publish the config file to your site:
+
+```bash
+php artisan vendor:publish --tag=alt-redirect-config
+```
+
+In the `headers` property, you can provide an array of headers to be passed to the `redirect` method.
 
 ## Questions etc
 
