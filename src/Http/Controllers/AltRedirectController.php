@@ -131,7 +131,7 @@ class AltRedirectController
                     'from' => $row[0],
                     'to' => $row[1],
                     'redirect_type' => $row[2],
-                    'sites' => isset($row[3]) ? explode(',', $row[3]) : false,
+                    'sites' => !empty($row[3] ?? false) ? explode(',', $row[3]) : ['default'],
                     'id' => ! empty($row[4] ?? false) ? $row[4] : uniqid(),
                 ];
                 // Skip the redirect if it'll create an infinite loop (handles empty redirects too)
