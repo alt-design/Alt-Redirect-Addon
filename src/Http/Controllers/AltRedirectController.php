@@ -1,18 +1,15 @@
 <?php
+
 namespace AltDesign\AltRedirect\Http\Controllers;
 
-use http\Env\Response;
-use Illuminate\Http\Request;
-use Statamic\Filesystem\Manager;
-
-use Statamic\Fields\BlueprintRepository;
-use Statamic\Fields\Blueprint;
-
 use AltDesign\AltRedirect\Helpers\Data;
+use Illuminate\Http\Request;
+use Statamic\Fields\Blueprint;
+use Statamic\Fields\BlueprintRepository;
+use Statamic\Filesystem\Manager;
 
 class AltRedirectController
 {
-
     public function index()
     {
         // Grab the old directory just in case
@@ -24,7 +21,7 @@ class AltRedirectController
         $values = $data->all();
 
         // Get a blueprint.So
-        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__ . '/../../../resources/blueprints')->find('redirects');
+        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__.'/../../../resources/blueprints')->find('redirects');
         // Get a Fields object
         $fields = $blueprint->fields();
         // Add the values to the object
@@ -50,7 +47,7 @@ class AltRedirectController
         $data = new Data('redirects');
 
         // Get a blueprint.
-        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__ . '/../../../resources/blueprints')->find('redirects');
+        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__.'/../../../resources/blueprints')->find('redirects');
 
         // Get a Fields object
         $fields = $blueprint->fields();
@@ -62,18 +59,18 @@ class AltRedirectController
         // Avoid looping redirects (caught by validation, but give a more helpful error)
         if ($arr['to'] === $arr['from']) {
             $response = [
-                'message' =>"'To' and 'From' addresses cannot be identical",
-                "errors" => [
-                    "from" => ["This field must be unique."],
-                    "to" => ["This field must be unique."],
+                'message' => "'To' and 'From' addresses cannot be identical",
+                'errors' => [
+                    'from' => ['This field must be unique.'],
+                    'to' => ['This field must be unique.'],
                 ],
             ];
+
             return response()->json($response, 422);
         }
 
         $fields = $fields->addValues($arr);
         $fields->validate();
-
 
         $data->setAll($fields->process()->values()->toArray());
 
@@ -81,21 +78,21 @@ class AltRedirectController
         $values = $data->all();
 
         return [
-            'data' => $values
+            'data' => $values,
         ];
     }
 
     public function delete(Request $request)
     {
         $manager = new Manager();
-        $manager->disk()->delete('content/alt-redirect/' . hash( 'sha512', base64_encode($request->from)) . '.yaml');
-        $manager->disk()->delete('content/alt-redirect/' . base64_encode($request->from) . '.yaml');
+        $manager->disk()->delete('content/alt-redirect/'.hash('sha512', base64_encode($request->from)).'.yaml');
+        $manager->disk()->delete('content/alt-redirect/'.base64_encode($request->from).'.yaml');
 
         $data = new Data('redirects');
         $values = $data->all();
 
         return [
-            'data' => $values
+            'data' => $values,
         ];
     }
 
@@ -103,8 +100,8 @@ class AltRedirectController
     {
         $data = new Data('redirects');
 
-        $callback = function() use ($data) {
-            $df = fopen("php://output", 'w');
+        $callback = function () use ($data) {
+            $df = fopen('php://output', 'w');
 
             fputcsv($df, ['from', 'to', 'redirect_type', 'sites', 'id']);
 
@@ -121,28 +118,30 @@ class AltRedirectController
             'Content-Disposition' => 'attachment; filename="redirects_'.date('Y-m-d\_H:i:s').'.csv"',
         ]);
     }
+
     public function import(Request $request)
     {
         $currentData = json_decode($request->get('data'), true);
         $file = $request->file('file');
         $handle = fopen($file->path(), 'r');
-        if ($handle !== FALSE) {
+        if ($handle !== false) {
             $headers = fgetcsv($handle);
-            while (($row = fgetcsv($handle)) !== FALSE) {
+            while (($row = fgetcsv($handle)) !== false) {
                 $temp = [
                     'from' => $row[0],
                     'to' => $row[1],
                     'redirect_type' => $row[2],
                     'sites' => isset($row[3]) ? explode(',', $row[3]) : false,
-                    'id' => $row[4] ?? uniqid(),
+                    'id' => ! empty($row[4] ?? false) ? $row[4] : uniqid(),
                 ];
                 // Skip the redirect if it'll create an infinite loop (handles empty redirects too)
-                if ($temp['to'] === $temp['from']){
+                if ($temp['to'] === $temp['from']) {
                     continue;
                 }
                 foreach ($currentData as $rdKey => $redirect) {
                     if ($redirect['id'] === $temp['id'] || $redirect['from'] === $temp['from']) {
                         $currentData[$rdKey] = $temp;
+
                         continue 2;
                     }
                 }
@@ -154,6 +153,6 @@ class AltRedirectController
         }
         $data = new Data('redirect');
         $data->saveAll($currentData);
-        return;
+
     }
 }
