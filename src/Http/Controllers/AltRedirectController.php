@@ -10,6 +10,25 @@ use Statamic\Filesystem\Manager;
 
 class AltRedirectController
 {
+    private string $type = 'redirects';
+    private array $actions = [
+        'redirects' => 'alt-redirect.create',
+        'query-strings' => 'alt-redirect.query-strings.create'
+    ];
+    private array $titles = [
+        'redirects' => 'Alt Redirect',
+        'query-strings' => 'Alt Redirect - Query Strings'
+    ];
+
+    // Work out what page we're handling
+    public function __construct()
+    {
+        $path = request()->path();
+        if (str_contains($path, 'query-strings')) {
+            $this->type = 'query-strings';
+        }
+    }
+
     public function index()
     {
         // Grab the old directory just in case
@@ -17,11 +36,11 @@ class AltRedirectController
 
         //Publish form
         // Get an array of values
-        $data = new Data('redirects');
+        $data = new Data($this->type);
         $values = $data->all();
 
         // Get a blueprint.So
-        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__.'/../../../resources/blueprints')->find('redirects');
+        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__.'/../../../resources/blueprints')->find($this->type);
         // Get a Fields object
         $fields = $blueprint->fields();
         // Add the values to the object
@@ -39,15 +58,18 @@ class AltRedirectController
             'values' => $fields->values(),
             'meta' => $fields->meta(),
             'data' => $values,
+            'type' => $this->type,
+            'action' => $this->actions[$this->type],
+            'title' => $this->titles[$this->type],
         ]);
     }
 
     public function create(Request $request)
     {
-        $data = new Data('redirects');
+        $data = new Data($this->type);
 
         // Get a blueprint.
-        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__.'/../../../resources/blueprints')->find('redirects');
+        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__.'/../../../resources/blueprints')->find($this->type);
 
         // Get a Fields object
         $fields = $blueprint->fields();
@@ -57,7 +79,7 @@ class AltRedirectController
         $arr['id'] = uniqid();
 
         // Avoid looping redirects (caught by validation, but give a more helpful error)
-        if ($arr['to'] === $arr['from']) {
+        if (($this->type == 'redirects') && ($arr['to'] === $arr['from'])) {
             $response = [
                 'message' => "'To' and 'From' addresses cannot be identical",
                 'errors' => [
@@ -74,7 +96,7 @@ class AltRedirectController
 
         $data->setAll($fields->process()->values()->toArray());
 
-        $data = new Data('redirects');
+        $data = new Data($this->type);
         $values = $data->all();
 
         return [
@@ -85,10 +107,17 @@ class AltRedirectController
     public function delete(Request $request)
     {
         $manager = new Manager();
-        $manager->disk()->delete('content/alt-redirect/'.hash('sha512', base64_encode($request->from)).'.yaml');
-        $manager->disk()->delete('content/alt-redirect/'.base64_encode($request->from).'.yaml');
+        switch($this->type) {
+            case "redirects" :
+                $manager->disk()->delete('content/alt-redirect/'.hash('sha512', base64_encode($request->from)).'.yaml');
+                $manager->disk()->delete('content/alt-redirect/'.base64_encode($request->from).'.yaml');
+                break;
+            case 'query-strings':
+                $manager->disk()->delete('content/alt-redirect/query-strings/'.hash('sha512', base64_encode($request->query_string)).'.yaml');
+                break;
+        }
 
-        $data = new Data('redirects');
+        $data = new Data($this->type);
         $values = $data->all();
 
         return [
@@ -96,6 +125,7 @@ class AltRedirectController
         ];
     }
 
+    // Import and Export can stay hardcoded to redirects since I/O for Query Strings aren't supported atm
     public function export(Request $request)
     {
         $data = new Data('redirects');

@@ -13,6 +13,17 @@ class Data
     public $data = [];
     public $regexData = [];
 
+    // This array is used to create the paths and to load files
+    protected $types = [
+        'redirects' => [
+            'content/alt-redirect',
+            'content/alt-redirect/alt-regex'
+        ],
+        'query-strings' => [
+            'content/alt-redirect/query-strings'
+        ],
+    ];
+
     public function __construct($type, $onlyRegex = false)
     {
         $this->type = $type;
@@ -21,15 +32,15 @@ class Data
         $this->manager = new Manager();
 
         // Check redirect folder exists
-        if (!$this->manager->disk()->exists('content/alt-redirect')) {
-            $this->manager->disk()->makeDirectory('content/alt-redirect');
-        }
-        if (!$this->manager->disk()->exists('content/alt-redirect/alt-regex')) {
-            $this->manager->disk()->makeDirectory('content/alt-redirect/alt-regex');
-        }
+        $this->checkOrMakeDirectories();
 
         if(!$onlyRegex) {
-            $allRedirects = File::allFiles(base_path('/content/alt-redirect'));
+            $allRedirects = [];
+            foreach($this->types[$this->type] as $path) {
+                $filePath = base_path($path);
+                $allRedirects = array_merge($allRedirects, File::files($filePath));
+            }
+
             $allRedirects = collect($allRedirects)->sortByDesc(function ($file) {
                 return $file->getCTime();
             });
@@ -46,6 +57,17 @@ class Data
         foreach ($allRegexRedirects as $redirect) {
             $data = Yaml::parse(File::get($redirect));
             $this->regexData[] = $data;
+        }
+    }
+
+    public function checkOrMakeDirectories()
+    {
+        foreach($this->types as $type) {
+            foreach($type as $directory) {
+                if (!$this->manager->disk()->exists($directory)) {
+                    $this->manager->disk()->makeDirectory($directory);
+                }
+            }
         }
     }
 
@@ -72,11 +94,19 @@ class Data
     public function setAll($data)
     {
         $this->data = $data;
-        if (strpos($data['from'], '(.*)') === false) {
-            $this->manager->disk()->put('content/alt-redirect/' . hash('sha512', (base64_encode($data['from']))) . '.yaml', Yaml::dump($this->data));
-            return;
+
+        switch ($this->type) {
+            case 'redirects':
+                if (strpos($data['from'], '(.*)') === false) {
+                    $this->manager->disk()->put('content/alt-redirect/' . hash('sha512', (base64_encode($data['from']))) . '.yaml', Yaml::dump($this->data));
+                    return;
+                }
+                $this->manager->disk()->put('content/alt-redirect/alt-regex/' . hash('sha512', base64_encode($data['id'])) . '.yaml', Yaml::dump($this->data));
+                break;
+            case 'query-strings':
+                $this->manager->disk()->put('content/alt-redirect/query-strings/' . hash('sha512', (base64_encode($data['query_string']))) . '.yaml', Yaml::dump($this->data));
+                break;
         }
-        $this->manager->disk()->put('content/alt-redirect/alt-regex/' . hash('sha512', base64_encode($data['id'])) . '.yaml', Yaml::dump($this->data));
     }
 
     public function saveAll($data)

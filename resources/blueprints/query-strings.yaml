@@ -1,0 +1,49 @@
+title: Query Strings
+tabs:
+  main:
+    display: Main
+    sections:
+      -
+        fields:
+          -
+            handle: query_string
+            field:
+              type: text
+              validate:
+                - required
+              display: Query String Key
+              instructions_position: above
+              listable: hidden
+              visibility: visible
+              replicator_preview: true
+              input_type: text
+              antlers: false
+              hide_display: false
+              width: 50
+          -
+            handle: sites
+            field:
+              mode: select
+              type: sites
+              display: Sites
+              validate:
+                - required
+              icon: sites
+              localizable: false
+              listable: hidden
+              instructions_position: above
+              visibility: visible
+              replicator_preview: true
+              hide_display: false
+              width: 50
+          -
+            handle: id
+            field:
+              type: text
+              display: id
+              icon: text
+              listable: hidden
+              instructions_position: above
+              visibility: hidden
+              replicator_preview: true
+              hide_display: false
