@@ -42,7 +42,6 @@ export default ({
         this.itemsReady = this.items
         this.totalItems = this.items.length
         this.sliceItems()
-        console.log(this.allow_csv)
     },
     methods: {
         updateItems(res) {
