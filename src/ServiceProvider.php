@@ -1,15 +1,18 @@
 <?php namespace AltDesign\AltRedirect;
 
 // Facades
+use AltDesign\AltRedirect\Console\Commands\DefaultQueryStringsCommand;
+use AltDesign\AltRedirect\Helpers\Data;
+use AltDesign\AltRedirect\Helpers\DefaultQueryStrings;
 use Statamic\Facades\CP\Nav;
 use Statamic\Facades\Permission;
+use Statamic\Filesystem\Manager;
 
 // Providers
 use Statamic\Providers\AddonServiceProvider;
 
 class ServiceProvider extends AddonServiceProvider
 {
-
     protected $routes = [
         'cp' => __DIR__.'/../routes/cp.php',
     ];
@@ -28,7 +31,12 @@ class ServiceProvider extends AddonServiceProvider
         ]
     ];
 
-    public function addToNav()
+    /**
+     * Register our addon and child menus in the nav
+     *
+     * @return self
+     */
+    public function addToNav() : self
     {
         Nav::extend(function ($nav) {
             $nav->content('Alt Redirect')
@@ -40,23 +48,59 @@ class ServiceProvider extends AddonServiceProvider
                     'Query Strings' => cp_route('alt-redirect.query-strings.index'),
                 ]);
         });
+
+        return $this;
     }
 
     /**
      * Register our permissions, so we can control who can see the settings.
      *
-     * @return void
+     * @return self
      */
-    public function registerPermissions()
+    public function registerPermissions() : self
     {
         Permission::register('view alt-redirect')
                   ->label('View Alt Redirect Settings');
+
+        return $this;
+    }
+
+    /**
+     * Register our artisan commands
+     *
+     * @return self
+     */
+    public function registerCommands() : self
+    {
+        $this->commands([
+            DefaultQueryStringsCommand::class,
+        ]);
+        return $this;
+    }
+
+    /**
+     * Install the default query strings if we're running in console (we're probably in a composer thing)
+     *
+     * @return self
+     */
+    public function installDefaultQueryStrings() : self
+    {
+        // create the standard
+        if ($this->app->runningInConsole()) {
+            $disk = (new Manager())->disk();
+            if (!$disk->exists('content/alt-redirect/.installed')) {
+                (new DefaultQueryStrings)->makeDefaultQueryStrings();
+            }
+        }
+        return $this;
     }
 
     public function bootAddon()
     {
-        $this->addToNav();
-        $this->registerPermissions();
+        $this->addToNav()
+            ->registerPermissions()
+            ->registerCommands()
+            ->installDefaultQueryStrings();
     }
 }
 
