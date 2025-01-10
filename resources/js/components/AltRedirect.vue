@@ -2,6 +2,7 @@
 export default ({
     props: {
         title: String,
+        instructions: String,
         action: String,
         blueprint: Array,
         meta: Array,
@@ -9,6 +10,7 @@ export default ({
         values: Array,
         data: Array,
         items: Array,
+        type: String,
     },
     computed: {
         lastPage() {
@@ -81,6 +83,17 @@ export default ({
                 })
             }
         },
+        deleteQueryString(query_string) {
+            if (confirm('Are you sure you want to delete this query string?')) {
+                Statamic.$axios.post(cp_url('/alt-design/alt-redirect/query-strings/delete'), {
+                    query_string: query_string,
+                }).then(res => {
+                    this.updateItems(res)
+                }).catch(err => {
+                    console.log(err)
+                })
+            }
+        },
         importFromCSV() {
             if (!this.selectedFile) {
                 alert("You haven't attached a CSV file!");
@@ -115,53 +128,84 @@ export default ({
 <template>
     <div id="alt-redirect">
 
-        <publish-form :title="title" :action="action" :blueprint="blueprint" :meta="meta" :values="values" @saved="updateItems($event)"></publish-form>
+        <h1 class="flex-1">{{ title }}</h1>
+        <h2 class="flex-1">{{ instructions }}</h2>
+
+        <publish-form :title="''" :action="action" :blueprint="blueprint" :meta="meta" :values="values" @saved="updateItems($event)"></publish-form>
 
         <div class="card overflow-hidden p-0">
             <div class="mt-4 pb-2 px-4">
                 <input type="text" class="input-text" v-model="search" placeholder="Search">
             </div>
             <div class="px-2">
-                <table data-size="sm" tabindex="0" class="data-table" style="table-layout: fixed">
-                <thead>
+                <table v-if="type == 'redirects'" data-size="sm" tabindex="0" class="data-table" style="table-layout: fixed">
+                    <thead>
+                        <tr>
+                            <th class="group from-column sortable-column" style="width:33%">
+                                <span>From</span>
+                            </th>
+                            <th class="group from-column sortable-column pr-8 w-24" style="width:33%">
+                                <span>To</span>
+                            </th>
+                            <th class="group to-column pr-8" style="width:8%">
+                                <span>Type</span>
+                            </th>
+                            <th class="group to-column pr-8" style="width:15%">
+                                <span>Sites</span>
+                            </th>
+                            <th class="actions-column" style="width:13.4%"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="item in itemsSliced" :key="item.id" style="width : 100%; overflow: clip">
+                            <td>
+                                {{ item.from }}
+                            </td>
+                            <td>
+                                {{ item.to }}
+                            </td>
+                            <td>
+                                {{ item.redirect_type }}
+                            </td>
+                            <td>
+                                {{ (item.sites && item.sites.length ) ? item.sites.join(', ') : "Unknown" }}
+                            </td>
+                            <td>
+                                <button @click="deleteRedirect(item.from, item.id)" class="btn"
+                                        style="color: #bc2626;">Remove
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table v-if="type == 'query-strings'" data-size="sm" tabindex="0" class="data-table" style="table-layout: fixed">
+                    <thead>
                     <tr>
-                        <th class="group from-column sortable-column" style="width:33%">
-                            <span>From</span>
+                        <th class="group from-column sortable-column" style="width:66%">
+                            <span>Query String Key</span>
                         </th>
-                        <th class="group from-column sortable-column pr-8 w-24" style="width:33%">
-                            <span>To</span>
-                        </th>
-                        <th class="group to-column pr-8" style="width:8%">
-                            <span>Type</span>
-                        </th>
-                        <th class="group to-column pr-8" style="width:15%">
+                        <th class="group to-column pr-8" style="width:20.6%">
                             <span>Sites</span>
                         </th>
                         <th class="actions-column" style="width:13.4%"></th>
                     </tr>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     <tr v-for="item in itemsSliced" :key="item.id" style="width : 100%; overflow: clip">
                         <td>
-                            {{ item.from }}
-                        </td>
-                        <td>
-                            {{ item.to }}
-                        </td>
-                        <td>
-                            {{ item.redirect_type }}
+                            {{ item.query_string }}
                         </td>
                         <td>
                             {{ (item.sites && item.sites.length ) ? item.sites.join(', ') : "Unknown" }}
                         </td>
                         <td>
-                            <button @click="deleteRedirect(item.from, item.id)" class="btn"
+                            <button @click="deleteQueryString(item.query_string)" class="btn"
                                     style="color: #bc2626;">Remove
                             </button>
                         </td>
                     </tr>
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
             </div>
             <div class="pagination text-sm py-4 px-4 flex items-center justify-between">
                 <div class="w-1/3 flex items-center">
@@ -213,8 +257,7 @@ export default ({
                 </div>
             </div>
         </div>
-
-        <div class="flex justify-between">
+        <div class="flex justify-between" :class="{ hidden: type == 'query-strings' }">
             <div class="w-full xl:w-1/2 card overflow-hidden p-0 mb-4 mt-4 mr-4 px-4 py-4">
                 <span class="font-semibold mb-2">CSV Export</span><br>
                 <p class="text-sm mb-4">Exports CSV of all redirects, use this format on import.</p>

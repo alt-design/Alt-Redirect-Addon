@@ -3,12 +3,14 @@
 @section('content')
     <div id="alt-redirect-app" >
         <alt-redirect
-            title="Alt Redirect"
-            action="{{ cp_route('alt-redirect.create') }}"
+            title="{{ $title }}"
+            instructions="{{ $instructions }}"
+            action="{{ cp_route($action) }}"
             :blueprint='@json($blueprint)'
             :meta='@json($meta)'
             :values='@json($values)'
             :items="{{ json_encode($data) }}"
+            type="{{ $type }}"
         ></alt-redirect>
 
         <!--  -->
