@@ -106,14 +106,16 @@ class AltRedirectController
 
     public function delete(Request $request)
     {
-        $manager = new Manager();
+        $disk = (new Manager())->disk();
         switch($this->type) {
             case "redirects" :
-                $manager->disk()->delete('content/alt-redirect/'.hash('sha512', base64_encode($request->from)).'.yaml');
-                $manager->disk()->delete('content/alt-redirect/'.base64_encode($request->from).'.yaml');
+                $disk->delete('content/alt-redirect/' . hash('sha512', base64_encode($request->from)) . '.yaml');
+                $disk->delete('content/alt-redirect/' . base64_encode($request->from) . '.yaml');
+                $disk->delete('content/alt-redirect/alt-regex/' . hash('sha512', base64_encode($request->id)) . '.yaml');
+                $disk->delete('content/alt-redirect/alt-regex/'. base64_encode($request->id) . '.yaml');
                 break;
             case 'query-strings':
-                $manager->disk()->delete('content/alt-redirect/query-strings/'.hash('sha512', base64_encode($request->query_string)).'.yaml');
+                $disk()->delete('content/alt-redirect/query-strings/' . hash('sha512', base64_encode($request->query_string)) . '.yaml');
                 break;
         }
 
