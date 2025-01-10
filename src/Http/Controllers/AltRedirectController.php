@@ -115,7 +115,7 @@ class AltRedirectController
                 $disk->delete('content/alt-redirect/alt-regex/'. base64_encode($request->id) . '.yaml');
                 break;
             case 'query-strings':
-                $disk()->delete('content/alt-redirect/query-strings/' . hash('sha512', base64_encode($request->query_string)) . '.yaml');
+                $disk->delete('content/alt-redirect/query-strings/' . hash('sha512', base64_encode($request->query_string)) . '.yaml');
                 break;
         }
 
