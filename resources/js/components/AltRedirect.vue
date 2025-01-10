@@ -2,6 +2,7 @@
 export default ({
     props: {
         title: String,
+        instructions: String,
         action: String,
         blueprint: Array,
         meta: Array,
@@ -128,7 +129,10 @@ export default ({
 <template>
     <div id="alt-redirect">
 
-        <publish-form :title="title" :action="action" :blueprint="blueprint" :meta="meta" :values="values" @saved="updateItems($event)"></publish-form>
+        <h1 class="flex-1">{{ title }}</h1>
+        <h2 class="flex-1">{{ instructions }}</h2>
+
+        <publish-form :title="''" :action="action" :blueprint="blueprint" :meta="meta" :values="values" @saved="updateItems($event)"></publish-form>
 
         <div class="card overflow-hidden p-0">
             <div class="mt-4 pb-2 px-4">

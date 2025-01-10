@@ -20,6 +20,11 @@ class AltRedirectController
         'query-strings' => 'Alt Redirect - Query Strings'
     ];
 
+    private array $instructions = [
+        'redirects' => 'Manage your redirects here. For detailed instructions, please consult the Alt Redirect Readme',
+        'query-strings' => 'Alt Redirect can strip query strings from your URIs before they are processed. These are listed below, add the key for query strings you want strip',
+    ];
+
     // Work out what page we're handling
     public function __construct()
     {
@@ -61,6 +66,7 @@ class AltRedirectController
             'type' => $this->type,
             'action' => $this->actions[$this->type],
             'title' => $this->titles[$this->type],
+            'instructions' => $this->instructions[$this->type],
         ]);
     }
 
