@@ -75,6 +75,6 @@ class CheckForRedirects
         $data = new Data('query-strings');
         $withoutQueryStrings = Arr::pluck($data->all(), 'query_string');
         // Filter out unwanted params, then strip the base url to get a filtered uri
-        return Str::replace(url('/'), '', request()->fullUrlWithoutQuery($withoutQueryStrings));
+        return Str::replace(request()->root(), '', request()->fullUrlWithoutQuery($withoutQueryStrings));
     }
 }
