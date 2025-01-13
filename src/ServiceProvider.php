@@ -1,15 +1,15 @@
 <?php namespace AltDesign\AltRedirect;
 
-// Facades
-use AltDesign\AltRedirect\Console\Commands\DefaultQueryStringsCommand;
-use AltDesign\AltRedirect\Helpers\Data;
-use AltDesign\AltRedirect\Helpers\DefaultQueryStrings;
+use Statamic\Providers\AddonServiceProvider;
 use Statamic\Facades\CP\Nav;
 use Statamic\Facades\Permission;
 use Statamic\Filesystem\Manager;
+use Statamic\StaticSite\SSG;
+use Illuminate\Support\Str;
 
-// Providers
-use Statamic\Providers\AddonServiceProvider;
+use AltDesign\AltRedirect\Console\Commands\DefaultQueryStringsCommand;
+use AltDesign\AltRedirect\Helpers\DefaultQueryStrings;
+use AltDesign\AltRedirect\Helpers\Data;
 
 class ServiceProvider extends AddonServiceProvider
 {
@@ -95,12 +95,53 @@ class ServiceProvider extends AddonServiceProvider
         return $this;
     }
 
+    public function configureSSG() : self
+    {
+        if (!class_exists(SSG::class)) {
+            return $this;
+        }
+
+        SSG::after(function () {
+            $dest = config('statamic.ssg.destination');
+            $base = rtrim(config('statamic.ssg.base_url'), '/'); // remove trailing slash
+            $disk = (new Manager())->disk();
+
+            $redirects = (new Data('redirects'))->all();
+            print("Found " . count($redirects) . " redirects\n");
+
+            $generated = $directories = 0;
+            foreach( $redirects as $redirect ) {
+                $fromDir = $dest . $redirect['from'];
+                $from = sprintf('%s%sindex.html',
+                    $fromDir,
+                    (Str::endsWith($fromDir, '/') ? '' : '/')
+                );
+                $to = $base . $redirect['to'];
+
+                if (!$disk->exists($from)) {
+                    $contents = view('alt-redirect::ssg', ['to' => $to]);
+                    if (!$disk->isDirectory($fromDir)) {
+                        mkdir($fromDir, 0777, true);
+                        $directories++;
+                    }
+                    if ($disk->put($from, $contents)) {
+                        $generated++;
+                    }
+                }
+            }
+
+            print("Generated $generated redirect files in $directories new directories\n");
+        });
+        return $this;
+    }
+
     public function bootAddon()
     {
         $this->addToNav()
             ->registerPermissions()
             ->registerCommands()
-            ->installDefaultQueryStrings();
+            ->installDefaultQueryStrings()
+            ->configureSSG();
     }
 }
 
