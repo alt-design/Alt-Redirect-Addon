@@ -195,7 +195,7 @@ export default ({
                             <span>Query String Key</span>
                         </th>
                         <th class="group to-column pr-8" style="width:20%">
-                            <span>Preserve</span>
+                            <span>Strip</span>
                         </th>
                         <th class="group to-column pr-8" style="width:20.6%">
                             <span>Sites</span>
@@ -209,7 +209,7 @@ export default ({
                             {{ item.query_string }}
                         </td>
                         <td>
-                            <button @click="toggleKey( item.query_string, 'preserve' )" type="button" aria-pressed="false" aria-label="Toggle Button" class="toggle-container" :class="{ on : item.preserve }" id="field_preserve">
+                            <button @click="toggleKey( item.query_string, 'strip' )" type="button" aria-pressed="false" aria-label="Toggle Button" class="toggle-container" :class="{ on : item.strip }" id="field_preserve">
                                 <div class="toggle-slider">
                                     <div tabindex="0" class="toggle-knob">
                                     </div>

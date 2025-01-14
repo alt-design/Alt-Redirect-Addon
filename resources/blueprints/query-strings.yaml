@@ -20,11 +20,11 @@ tabs:
               antlers: false
               hide_display: false
               width: 50
-          - handle: preserve
+          - handle: strip
             field:
               type: toggle
-              display: Preserve
-              instructions: 'Enable to preserve this query string and append it to the redirect URL'
+              display: Strip
+              instructions: 'Enable to strip this query string so it wont appear in your redirect url'
               instructions_position: below
               width: 50
           -
