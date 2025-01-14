@@ -193,4 +193,35 @@ class AltRedirectController
         $data->saveAll($currentData);
 
     }
+
+    // Toggle a key in a certain item and return the data afterwards
+    public function toggle(Request $request)
+    {
+        $toggleKey =  $request->get('toggleKey');
+        $index =  $request->get('index');
+        $data = new Data($this->type);
+
+        switch ($this->type) {
+            case 'query-strings':
+                $item = $data->getByKey('query_string', $index);
+                if ($item === null) {
+                    return response('Error finding item', 500);
+                }
+
+                if (!isset($item[$toggleKey])) {
+                    $item[$toggleKey] = false;
+                }
+                $item[$toggleKey] = !$item[$toggleKey];
+                $data->setAll($item);
+                break;
+            default:
+                return response('Method not implemented', 500);
+        }
+        $data = new Data($this->type);
+        $values = $data->all();
+
+        return [
+            'data' => $values,
+        ];
+    }
 }

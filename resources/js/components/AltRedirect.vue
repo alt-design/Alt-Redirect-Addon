@@ -121,6 +121,16 @@ export default ({
         dropdownPageChange() {
             this.setPage(this.selectedPage)
         },
+        toggleKey(index, toggleKey) {
+            Statamic.$axios.post(cp_url('/alt-design/alt-redirect/query-strings/toggle'), {
+                index: index,
+                toggleKey: toggleKey,
+            }).then(res => {
+                this.updateItems(res)
+            }).catch(err => {
+                console.log(err)
+            })
+        },
     }
 })
 </script>
@@ -181,8 +191,11 @@ export default ({
                 <table v-if="type == 'query-strings'" data-size="sm" tabindex="0" class="data-table" style="table-layout: fixed">
                     <thead>
                     <tr>
-                        <th class="group from-column sortable-column" style="width:66%">
+                        <th class="group from-column sortable-column" style="width:46%">
                             <span>Query String Key</span>
+                        </th>
+                        <th class="group to-column pr-8" style="width:20%">
+                            <span>Preserve</span>
                         </th>
                         <th class="group to-column pr-8" style="width:20.6%">
                             <span>Sites</span>
@@ -191,9 +204,17 @@ export default ({
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="item in itemsSliced" :key="item.id" style="width : 100%; overflow: clip">
+                    <tr v-for="(item, index) in itemsSliced" :key="item.id" style="width : 100%; overflow: clip">
                         <td>
                             {{ item.query_string }}
+                        </td>
+                        <td>
+                            <button @click="toggleKey( item.query_string, 'preserve' )" type="button" aria-pressed="false" aria-label="Toggle Button" class="toggle-container" :class="{ on : item.preserve }" id="field_preserve">
+                                <div class="toggle-slider">
+                                    <div tabindex="0" class="toggle-knob">
+                                    </div>
+                                </div>
+                            </button>
                         </td>
                         <td>
                             {{ (item.sites && item.sites.length ) ? item.sites.join(', ') : "Unknown" }}

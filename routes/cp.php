@@ -15,4 +15,5 @@ Route::group(['middleware' => ['statamic.cp.authenticated'], 'namespace' => 'Alt
     Route::get('/alt-design/alt-redirect/query-strings/', 'AltRedirectController@index')->name('alt-redirect.query-strings.index');
     Route::post('/alt-design/alt-redirect/query-strings/', 'AltRedirectController@create')->name('alt-redirect.query-strings.create');
     Route::post('/alt-design/alt-redirect/query-strings/delete', 'AltRedirectController@delete')->name('alt-redirect.query-strings.delete');
+    Route::post('/alt-design/alt-redirect/query-strings/toggle', 'AltRedirectController@toggle')->name('alt-redirect.query-strings.toggle');
 });
