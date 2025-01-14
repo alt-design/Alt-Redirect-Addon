@@ -71,6 +71,16 @@ class Data
         }
     }
 
+    public function getByKey($key, $value) : array | null
+    {
+        $data = collect($this->data);
+        $result = $data->firstWhere($key, $value);
+        if ($result) {
+            return $result;
+        }
+        return null;
+    }
+
     public function get($key)
     {
         if (!isset($this->data[$key])) {

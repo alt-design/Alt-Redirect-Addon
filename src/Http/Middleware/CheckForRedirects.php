@@ -45,7 +45,7 @@ class CheckForRedirects
                     return $next($request);
                 }
                 if (!($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
-                    return redirect($to , $redirect['redirect_type'] ?? 301, config('alt-redirect.headers', []));
+                    return $this->redirectWithPreservedParams($to , $redirect['redirect_type'] ?? 301);
                 }
             }
         }
@@ -56,13 +56,36 @@ class CheckForRedirects
             if (preg_match('#' . $redirect['from'] . '#', $uri)) {
                 $redirectTo = preg_replace('#' . $redirect['from'] . '#', $redirect['to'], $uri);
                 if (!($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
-                    return redirect($redirectTo ?? '/', $redirect['redirect_type'] ?? 301, config('alt-redirect.headers', []));
+                    return $this->redirectWithPreservedParams($redirectTo ?? '/', $redirect['redirect_type'] ?? 301);
                 }
             }
         }
-
         //No redirect
         return $next($request);
+    }
+
+    private function redirectWithPreservedParams($to, $status)
+    {
+        $preserveKeys = [];
+        foreach ((new Data('query-strings'))->all() as $item) {
+            if ($item['preserve'] ?? false) {
+                $preserveKeys[] = $item['query_string'];
+            }
+        }
+
+        $filteredStrings = [];
+        foreach(request()->all() as $key => $value) {
+            if (!in_array($key, $preserveKeys)) {
+                continue;
+            }
+            $filteredStrings[] = sprintf( "%s=%s", $key, $value);
+        }
+
+        if ($filteredStrings) {
+            $to .= str_contains($to, '?') ? '&' : '?';
+            $to .= implode('&', $filteredStrings);
+        }
+        return redirect($to , $status, config('alt-redirect.headers', []));
     }
 
     /**

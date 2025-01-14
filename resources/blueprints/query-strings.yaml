@@ -20,6 +20,13 @@ tabs:
               antlers: false
               hide_display: false
               width: 50
+          - handle: preserve
+            field:
+              type: toggle
+              display: Preserve
+              instructions: 'Enable to preserve this query string and append it to the redirect URL'
+              instructions_position: below
+              width: 50
           -
             handle: sites
             field:
