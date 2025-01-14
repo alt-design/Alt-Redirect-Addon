@@ -63,7 +63,12 @@ This is a new feature we've added to remove query strings from URIs before they'
 
 Because redirects are URI-based, an unexpected query string on a link would've cause your redirects to not function.
 
-With this feature, you can strip out troublesome query strings so your redirects work as intended.
+With this feature, you can strip out troublesome query strings before your redirects are processed.
+
+Following this, you can choose to either add the query string back to the redirect URL, or strip it out entirely.
+The default behaviour for this is to add the filtered query strings back after the redirect has been found. 
+
+You can set a query string to be stripped using the "strip" toggle in the Query Strings admin panel.
 
 The Query Strings functionality can be found in the nav as a child underneath the Alt Redirect Addon
 ```
