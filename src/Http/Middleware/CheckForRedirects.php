@@ -68,7 +68,7 @@ class CheckForRedirects
     {
         $preserveKeys = [];
         foreach ((new Data('query-strings'))->all() as $item) {
-            if ($item['preserve'] ?? false) {
+            if (!($item['strip'] ?? false)) {
                 $preserveKeys[] = $item['query_string'];
             }
         }
