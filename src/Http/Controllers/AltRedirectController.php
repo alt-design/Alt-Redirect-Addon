@@ -189,7 +189,7 @@ class AltRedirectController
             // Close the file handle
             fclose($handle);
         }
-        $data = new Data('redirect');
+        $data = new Data('redirects');
         $data->saveAll($currentData);
 
     }
