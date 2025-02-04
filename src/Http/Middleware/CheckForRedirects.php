@@ -1,9 +1,8 @@
 <?php namespace AltDesign\AltRedirect\Http\Middleware;
 
+use AltDesign\AltRedirect\Helpers\URISupport;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use Closure;
 
 use Statamic\Facades\Site;
@@ -21,7 +20,7 @@ class CheckForRedirects
     public function handle(Request $request, Closure $next, string ...$guards): Response
     {
         // Grab uri, make alternate / permutation
-        $uri = $this->uriWithFilteredQueryStrings();
+        $uri = URISupport::uriWithFilteredQueryStrings();
         if (str_ends_with($uri, '/')) {
             $permuURI = substr($uri, 0, strlen($uri) - 1);
         } else {
@@ -87,17 +86,5 @@ class CheckForRedirects
         }
         return redirect($to , $status, config('alt-redirect.headers', []));
     }
-
-    /**
-     * Returns the current URI with named Query Strings filtered out .
-     *
-     * @return string $uri
-     */
-    private function uriWithFilteredQueryStrings() : string
-    {
-        $data = new Data('query-strings');
-        $withoutQueryStrings = Arr::pluck($data->all(), 'query_string');
-        // Filter out unwanted params, then strip the base url to get a filtered uri
-        return Str::replace(request()->root(), '', request()->fullUrlWithoutQuery($withoutQueryStrings));
-    }
 }
+
