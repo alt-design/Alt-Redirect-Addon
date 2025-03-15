@@ -79,7 +79,7 @@ class ServiceProvider extends AddonServiceProvider
     }
 
     /**
-     * Install the default query strings if we're running in console (we're probably in a composer thing)
+     * Install the default query strings
      *
      * @return self
      */
@@ -140,7 +140,6 @@ class ServiceProvider extends AddonServiceProvider
         $this->addToNav()
             ->registerPermissions()
             ->registerCommands()
-            ->installDefaultQueryStrings()
             ->configureSSG();
     }
 }

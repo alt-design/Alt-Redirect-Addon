@@ -83,13 +83,6 @@ On this page you can manage the query strings you wish to strip, simply :
 
 You'll see your query string in the list.
 
-#### Defaults
-
-We've provided a few default query strings that will be stripped. 
-They're added as regular items when you install the addon.
-
-If you don't want / need these, simply delete them!
-
 #### Artisan Command
 
 We have provided an Artisan command to force the creation of defaults.
