@@ -3,6 +3,7 @@
 use AltDesign\AltRedirect\Helpers\URISupport;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Closure;
 
 use Statamic\Facades\Site;
@@ -21,6 +22,10 @@ class CheckForRedirects
     {
         // Grab uri, make alternate / permutation
         $uri = URISupport::uriWithFilteredQueryStrings();
+        if (! config('alt-redirect.disable-enhanced-multisite')) {
+            $uri = URISupport::filterSubSiteUri($uri);
+        }
+
         if (str_ends_with($uri, '/')) {
             $permuURI = substr($uri, 0, strlen($uri) - 1);
         } else {
@@ -65,6 +70,13 @@ class CheckForRedirects
 
     private function redirectWithPreservedParams($to, $status)
     {
+        $siteUrl = Site::current()->url();
+        if ((! Str::startsWith($to, $siteUrl)) &&
+            (! config('alt-redirect.disable-enhanced-multisite'))) {
+            $to = $siteUrl . $to;
+        }
+
+
         $preserveKeys = [];
         foreach ((new Data('query-strings'))->all() as $item) {
             if (!($item['strip'] ?? false)) {

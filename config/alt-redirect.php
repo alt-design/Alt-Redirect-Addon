@@ -16,6 +16,7 @@ return [
     |
     */
 
-    'headers' => []
+    'headers' => [],
 
+    'disable-enhanced-multisite' => (bool) env('ALT_REDIRECT_DISABLE_ENHANCED_MULTISITE', false),
 ];
