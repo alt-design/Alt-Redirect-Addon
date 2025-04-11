@@ -19,6 +19,12 @@ You can search for this addon in the `Tools > Addons` section of the Statamic co
 composer require alt-design/alt-redirect
 ```
 
+## Upgrading to v2
+
+Your upgrade to v2 should be a smooth road, however there are some breaking changes to multisite handling that you should read if you are using a multisite.
+
+Dont worry though, if you need the old behaviour it can be enabled with an environment variable 🚀
+
 ## Basic usage
 
 ### Simple redirects
@@ -61,7 +67,7 @@ In the `headers` property, you can provide an array of headers to be passed to t
 
 The addon offers support for Statamic multisite setups in v2 and a legacy method to maintain pre-v2 redirect support.
 
-## v2 Support
+#### v2 Enhanced Multisite Support
 
 Alt Redirect v2 brings, enhanced support for subsites with differing URLs.
 
@@ -73,14 +79,14 @@ Alt Redirect v2 brings, enhanced support for subsites with differing URLs.
 | Site portion is added back in *(new 😁)*  | `/fr/new`                      |
 | Redirect happens                          | `return redirect("/fr/new");`  |
 
-This means that the redirect addon will handle redirecting on any of it's subsites as long as it is flagged on the redirect. 
+This means that the redirect addon will handle redirecting on any of it's subsites as long as the site is flagged on the redirect. 
 Previously (versions <v2 or >v2 with enhanced subsite support disabled) you would've needed to flag the site in the redirect and include the full URI, EG:
 
 `"/fr/old" -> "/fr/new"`
 
-## Legacy >v2 Support
+#### Legacy >v2 Support
 
-This mode aims to maintain compatibility where people have an existing multisite setup and have redirects configured with the full URI including the site, EG:
+This mode aims to maintain compatibility for people with an existing multisite setup who have redirects configured with the full URI including the site, EG:
 
 `"/fr/old" -> "/fr/new"`
 
