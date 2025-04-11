@@ -57,6 +57,43 @@ php artisan vendor:publish --tag=alt-redirect-config
 
 In the `headers` property, you can provide an array of headers to be passed to the `redirect` method.
 
+#### Multisite Support
+
+The addon offers support for Statamic multisite setups in v2 and a legacy method to maintain pre-v2 redirect support.
+
+## v2 Support
+
+Alt Redirect v2 brings, enhanced support for subsites with differing URLs.
+
+| How it works                              | Example (Assuming "/fr" site)  |
+|-------------------------------------------|--------------------------------|
+| URL comes in                              | `/fr/old`                      |
+| The site portion is stripped out *(new)*  | `/old`                         |
+| Redirect is processed as usual            | `/old` → `/new`                |
+| Site portion is added back in *(new 😁)*  | `/fr/new`                      |
+| Redirect happens                          | `return redirect("/fr/new");`  |
+
+This means that the redirect addon will handle redirecting on any of it's subsites as long as it is flagged on the redirect. 
+Previously (versions <v2 or >v2 with enhanced subsite support disabled) you would've needed to flag the site in the redirect and include the full URI, EG:
+
+`"/fr/old" -> "/fr/new"`
+
+## Legacy >v2 Support
+
+This mode aims to maintain compatibility where people have an existing multisite setup and have redirects configured with the full URI including the site, EG:
+
+`"/fr/old" -> "/fr/new"`
+
+Please note : This legacy mode SHOULD NOT be used unless you have existing redirects which use the old behaviour. Fresh installs will not use legacy mode and it should not be used going forward.
+
+Legacy mode can be enabled with the follow env variable :
+
+```
+ALT_REDIRECT_DISABLE_ENHANCED_MULTISITE=true
+```
+
+Also note : The addon uses this env var through a config option to ensure compatibility with cached configs.
+
 ### Query String Stripping
 
 This is a new feature we've added to remove query strings from URIs before they're processed by the redirect middleware. 
