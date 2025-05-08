@@ -6,6 +6,7 @@ namespace AltDesign\AltRedirect\Helpers;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Statamic\Facades\Site;
 
 class URISupport
 {
@@ -60,5 +61,27 @@ class URISupport
     private static function myArrQuery(array $array, $encoding_type = PHP_QUERY_RFC1738) : string
     {
         return http_build_query($array, '', '&', $encoding_type);
+    }
+
+    /**
+     * Use the Statamic site facade to determine the current site and strip off the
+     * part of the URI for the site.
+     *
+     * @param string $fullUri
+     * @return string
+     */
+    public static function filterSubsiteUri(string $fullUri) : string
+    {
+        $subSiteURI = Site::current()->url();
+
+        if ($subSiteURI == '/') {
+            return $fullUri;
+        }
+
+        return Str::replaceFirst(
+            $subSiteURI,
+            '',
+            $fullUri
+        );
     }
 }
