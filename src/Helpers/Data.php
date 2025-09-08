@@ -1,4 +1,5 @@
 <?php
+
 namespace AltDesign\AltRedirect\Helpers;
 
 use Illuminate\Support\Facades\File;
@@ -34,9 +35,9 @@ class Data
         // Check redirect folder exists
         $this->checkOrMakeDirectories();
 
-        if(!$onlyRegex) {
+        if (!$onlyRegex) {
             $allRedirects = [];
-            foreach($this->types[$this->type] as $path) {
+            foreach ($this->types[$this->type] as $path) {
                 $filePath = base_path($path);
                 $allRedirects = array_merge($allRedirects, File::files($filePath));
             }
@@ -62,8 +63,8 @@ class Data
 
     public function checkOrMakeDirectories()
     {
-        foreach($this->types as $type) {
-            foreach($type as $directory) {
+        foreach ($this->types as $type) {
+            foreach ($type as $directory) {
                 if (!$this->manager->disk()->exists($directory)) {
                     $this->manager->disk()->makeDirectory($directory);
                 }
@@ -71,7 +72,7 @@ class Data
         }
     }
 
-    public function getByKey($key, $value) : array | null
+    public function getByKey($key, $value): array | null
     {
         $data = collect($this->data);
         $result = $data->firstWhere($key, $value);

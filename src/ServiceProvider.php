@@ -1,15 +1,18 @@
-<?php namespace AltDesign\AltRedirect;
+<?php
+
+namespace AltDesign\AltRedirect;
 
 use Statamic\Providers\AddonServiceProvider;
 use Statamic\Facades\CP\Nav;
+use Statamic\Facades\Git;
 use Statamic\Facades\Permission;
 use Statamic\Filesystem\Manager;
 use Statamic\StaticSite\SSG;
 use Illuminate\Support\Str;
-
 use AltDesign\AltRedirect\Console\Commands\DefaultQueryStringsCommand;
 use AltDesign\AltRedirect\Helpers\DefaultQueryStrings;
 use AltDesign\AltRedirect\Helpers\Data;
+use AltDesign\AltRedirect\Events\DataSavedEvent;
 
 class ServiceProvider extends AddonServiceProvider
 {
@@ -36,7 +39,7 @@ class ServiceProvider extends AddonServiceProvider
      *
      * @return self
      */
-    public function addToNav() : self
+    public function addToNav(): self
     {
         Nav::extend(function ($nav) {
             $nav->content('Alt Redirect')
@@ -57,7 +60,7 @@ class ServiceProvider extends AddonServiceProvider
      *
      * @return self
      */
-    public function registerPermissions() : self
+    public function registerPermissions(): self
     {
         Permission::register('view alt-redirect')
                   ->label('View Alt Redirect Settings');
@@ -70,7 +73,7 @@ class ServiceProvider extends AddonServiceProvider
      *
      * @return self
      */
-    public function registerCommands() : self
+    public function registerCommands(): self
     {
         $this->commands([
             DefaultQueryStringsCommand::class,
@@ -83,19 +86,19 @@ class ServiceProvider extends AddonServiceProvider
      *
      * @return self
      */
-    public function installDefaultQueryStrings() : self
+    public function installDefaultQueryStrings(): self
     {
         // create the standard
         if ($this->app->runningInConsole()) {
             $disk = (new Manager())->disk();
             if (!$disk->exists('content/alt-redirect/.installed')) {
-                (new DefaultQueryStrings)->makeDefaultQueryStrings();
+                (new DefaultQueryStrings())->makeDefaultQueryStrings();
             }
         }
         return $this;
     }
 
-    public function configureSSG() : self
+    public function configureSSG(): self
     {
         if (!class_exists(SSG::class)) {
             return $this;
@@ -110,9 +113,10 @@ class ServiceProvider extends AddonServiceProvider
             print("Found " . count($redirects) . " redirects\n");
 
             $generated = $directories = 0;
-            foreach( $redirects as $redirect ) {
+            foreach ($redirects as $redirect) {
                 $fromDir = $dest . $redirect['from'];
-                $from = sprintf('%s%sindex.html',
+                $from = sprintf(
+                    '%s%sindex.html',
                     $fromDir,
                     (Str::endsWith($fromDir, '/') ? '' : '/')
                 );
@@ -135,12 +139,20 @@ class ServiceProvider extends AddonServiceProvider
         return $this;
     }
 
+    public function registerEventHandler()
+    {
+        if (config('statamic.git.enabled')) {
+            Git::listen(DataSavedEvent::class);
+        }
+        return $this;
+    }
+
     public function bootAddon()
     {
         $this->addToNav()
             ->registerPermissions()
             ->registerCommands()
+            ->registerEventHandler()
             ->configureSSG();
     }
 }
-
