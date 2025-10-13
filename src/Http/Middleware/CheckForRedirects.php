@@ -65,19 +65,39 @@ class CheckForRedirects
 
     private function redirectWithPreservedParams($to, $status)
     {
-        $preserveKeys = [];
+        $stripKeys = [];
         foreach ((new Data('query-strings'))->all() as $item) {
-            if (!($item['strip'] ?? false)) {
-                $preserveKeys[] = $item['query_string'];
+            if ($item['strip'] ?? false) {
+                $stripKeys[] = strtolower($item['query_string']);
             }
         }
 
+        // Parse raw query string to handle double-encoding and duplicates
+        $rawQueryString = request()->getQueryString();
         $filteredStrings = [];
-        foreach(request()->all() as $key => $value) {
-            if (!in_array($key, $preserveKeys)) {
-                continue;
+        $seenKeys = [];
+
+        if ($rawQueryString) {
+            // Decode the query string recursively to handle multiple levels of encoding
+            $decodedQueryString = $rawQueryString;
+            $previousQueryString = '';
+
+            // Keep decoding until no more changes occur (handles double/triple encoding)
+            while ($decodedQueryString !== $previousQueryString) {
+                $previousQueryString = $decodedQueryString;
+                $decodedQueryString = urldecode($decodedQueryString);
             }
-            $filteredStrings[] = sprintf( "%s=%s", $key, $value);
+
+            parse_str($decodedQueryString, $parsedParams);
+
+            foreach($parsedParams as $key => $value) {
+                $normalizedKey = strtolower($key);
+                // Strip only parameters marked with strip:true, preserve all others
+                if (!in_array($normalizedKey, $stripKeys) && !isset($seenKeys[$normalizedKey])) {
+                    $seenKeys[$normalizedKey] = true;
+                    $filteredStrings[] = sprintf("%s=%s", urlencode($key), urlencode($value));
+                }
+            }
         }
 
         if ($filteredStrings) {
