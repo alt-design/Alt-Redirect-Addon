@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Statamic\Fields\Blueprint;
 use Statamic\Fields\BlueprintRepository;
 use Statamic\Filesystem\Manager;
+use AltDesign\AltRedirect\Events\DataSavedEvent;
+use AltDesign\AltRedirect\Events\DataSavedEventMessage;
 
 class AltRedirectController
 {
@@ -45,7 +47,7 @@ class AltRedirectController
         $values = $data->all();
 
         // Get a blueprint.So
-        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__.'/../../../resources/blueprints')->find($this->type);
+        $blueprint = with(new BlueprintRepository())->setDirectory(__DIR__.'/../../../resources/blueprints')->find($this->type);
         // Get a Fields object
         $fields = $blueprint->fields();
         // Add the values to the object
@@ -75,7 +77,7 @@ class AltRedirectController
         $data = new Data($this->type);
 
         // Get a blueprint.
-        $blueprint = with(new BlueprintRepository)->setDirectory(__DIR__.'/../../../resources/blueprints')->find($this->type);
+        $blueprint = with(new BlueprintRepository())->setDirectory(__DIR__.'/../../../resources/blueprints')->find($this->type);
 
         // Get a Fields object
         $fields = $blueprint->fields();
@@ -102,6 +104,8 @@ class AltRedirectController
 
         $data->setAll($fields->process()->values()->toArray());
 
+        DataSavedEvent::dispatch(new DataSavedEventMessage('Created redirect'));
+
         $data = new Data($this->type);
         $values = $data->all();
 
@@ -113,8 +117,8 @@ class AltRedirectController
     public function delete(Request $request)
     {
         $disk = (new Manager())->disk();
-        switch($this->type) {
-            case "redirects" :
+        switch ($this->type) {
+            case "redirects":
                 $disk->delete('content/alt-redirect/' . hash('sha512', base64_encode($request->from)) . '.yaml');
                 $disk->delete('content/alt-redirect/' . base64_encode($request->from) . '.yaml');
                 $disk->delete('content/alt-redirect/alt-regex/' . hash('sha512', base64_encode($request->id)) . '.yaml');
@@ -127,6 +131,8 @@ class AltRedirectController
 
         $data = new Data($this->type);
         $values = $data->all();
+
+        DataSavedEvent::dispatch(new DataSavedEventMessage('Deleted redirect'));
 
         return [
             'data' => $values,
@@ -192,6 +198,7 @@ class AltRedirectController
         $data = new Data('redirects');
         $data->saveAll($currentData);
 
+        DataSavedEvent::dispatch(new DataSavedEventMessage('Imported redirects'));
     }
 
     // Toggle a key in a certain item and return the data afterwards
@@ -213,6 +220,7 @@ class AltRedirectController
                 }
                 $item[$toggleKey] = !$item[$toggleKey];
                 $data->setAll($item);
+                DataSavedEvent::dispatch(new DataSavedEventMessage('Updated redirect querystring'));
                 break;
             default:
                 return response('Method not implemented', 500);
