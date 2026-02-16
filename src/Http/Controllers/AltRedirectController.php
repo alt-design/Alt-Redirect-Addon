@@ -60,8 +60,8 @@ class AltRedirectController
 
         return Inertia::render('alt-redirect::Index', [
             'blueprint' => $blueprint->toPublishArray(),
-            'initialValues' => $fields->values(),
-            'initialMeta' => $fields->meta(),
+            'initialValues' => $fields->values()->all(),
+            'initialMeta' => $fields->meta()->all(),
             'items' => $values,
             'type' => $this->type,
             'action' => $this->actions[$this->type],
