@@ -194,6 +194,7 @@ class AltRedirectController
         $data = new Data('redirects');
         $data->saveAll($currentData);
 
+        return true;
     }
 
     // Toggle a key in a certain item and return the data afterwards
