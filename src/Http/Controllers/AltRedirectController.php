@@ -106,7 +106,7 @@ class AltRedirectController
         $values = $data->all();
 
         return [
-            'data' => $values,
+            'items' => $values,
         ];
     }
 
@@ -194,7 +194,9 @@ class AltRedirectController
         $data = new Data('redirects');
         $data->saveAll($currentData);
 
-        return true;
+        return [
+            'items' => $data->all(),
+        ];
     }
 
     // Toggle a key in a certain item and return the data afterwards
@@ -224,7 +226,7 @@ class AltRedirectController
         $values = $data->all();
 
         return redirect()->back()->with([
-            'data' => $values,
+            'items' => $values,
         ]);
     }
 }
