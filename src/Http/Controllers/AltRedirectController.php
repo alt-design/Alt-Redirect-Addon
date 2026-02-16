@@ -103,11 +103,10 @@ class AltRedirectController
         $data->setAll($fields->process()->values()->toArray());
 
         $data = new Data($this->type);
-        $values = $data->all();
 
-        return [
-            'items' => $values,
-        ];
+        return redirect()->back()->with([
+            'items' => $data->all(),
+        ]);
     }
 
     public function delete(Request $request)
@@ -194,9 +193,9 @@ class AltRedirectController
         $data = new Data('redirects');
         $data->saveAll($currentData);
 
-        return [
+        return redirect()->back()->with([
             'items' => $data->all(),
-        ];
+        ]);
     }
 
     // Toggle a key in a certain item and return the data afterwards

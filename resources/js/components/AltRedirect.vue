@@ -64,10 +64,14 @@ function deleteRedirect(from, id) {
         router.post(cp_url('alt-design/alt-redirect/delete'), {
             from: from,
             id: id
-        }, {preserveState: true, preserveScroll: true, onSuccess: () => {
-            Statamic.$toast.success("Redirect deleted successfully!")
-            setPage(currentPage.value);
-        }});
+        }, {
+            preserveState: "errors",
+            preserveScroll: true, 
+            onSuccess: () => {
+                Statamic.$toast.success("Redirect deleted successfully!")
+                setPage(currentPage.value);
+            }
+        });
     }
 }
 
@@ -75,10 +79,14 @@ function deleteQueryString(query_string) {
     if (confirm('Are you sure you want to delete this query string?')) {
         router.post(cp_url('/alt-design/alt-redirect/query-strings/delete'), {
             query_string: query_string,
-        }, {preserveState: true, preserveScroll: true, onSuccess: () => {
-            Statamic.$toast.success("Query string deleted successfully!")
-            setPage(currentPage.value);
-        }});
+        }, {
+            preserveState: "errors",
+            preserveScroll: true, 
+            onSuccess: () => {
+                Statamic.$toast.success("Query string deleted successfully!")
+                setPage(currentPage.value);
+            }
+        });
     }
 }
 
@@ -89,20 +97,28 @@ function importFromCSV() {
     }
 
     router.post(cp_url('alt-design/alt-redirect/import'), {file: selectedFile.value}, {
-        preserveState: true, preserveScroll: true, onSuccess: () => {
-        Statamic.$toast.success("CSV imported successfully!")
-        setPage(currentPage.value);
-    }});
+        preserveState: "errors",
+        preserveScroll: true, 
+        onSuccess: () => {
+            Statamic.$toast.success("CSV imported successfully!")
+            setPage(currentPage.value);
+            selectedFile.value = null;
+        }
+    });
 }
 
 function toggleKey(index, toggleKey) {
     router.post(cp_url('/alt-design/alt-redirect/query-strings/toggle'), {
         index: index,
         toggleKey: toggleKey,
-    }, {preserveState: true, preserveScroll: true, onSuccess: () => {
-        Statamic.$toast.success("Toggled successfully!")
-        setPage(currentPage.value);
-    }});
+    }, {
+        preserveState: "errors",
+        preserveScroll: true, 
+        onSuccess: () => {
+            Statamic.$toast.success("Toggled successfully!")
+            setPage(currentPage.value);
+        }
+    });
 }
 
 function save() {
