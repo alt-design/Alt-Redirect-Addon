@@ -2,7 +2,7 @@
 import { Header, Heading, Subheading, PublishContainer, Button, Switch, Card, Input, Pagination } from '@statamic/cms/ui';
 import { Pipeline, BeforeSaveHooks, Request, AfterSaveHooks } from '@statamic/cms/save-pipeline'; 
 import { router } from '@statamic/cms/inertia'
-import { computed, ref } from 'vue'; 
+import { computed, ref, watch } from 'vue'; 
 
 const props = defineProps({
     title: String,
@@ -26,7 +26,7 @@ const saving = ref(false);
 const container = ref('container');
 
 const lastPage = computed(() => {
-    return Math.ceil(props.items.length / perPage);
+    return Math.ceil(itemsSliced.value.total / perPage);
 });
 
 const itemsSliced = computed(() => {
@@ -44,7 +44,10 @@ const itemsSliced = computed(() => {
     const start = (currentPage.value - 1) * perPage;
     const end = start + perPage;
 
-    return temp.slice(start, end);
+    return {
+        total: temp.length,
+        data: temp.slice(start, end)
+    };
 });
 
 function setPage(page) {
@@ -117,6 +120,10 @@ function save() {
         });
 }
 
+watch(search, () => {
+    setPage(1)
+});
+
 </script>
 
 <template>
@@ -157,7 +164,7 @@ function save() {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in itemsSliced" :key="item.id" style="width : 100%; overflow: clip">
+                        <tr v-for="item in itemsSliced.data" :key="item.id" style="width : 100%; overflow: clip">
                             <td>
                                 {{ item.from }}
                             </td>
@@ -192,7 +199,7 @@ function save() {
                     </tr>
                     </thead>
                     <tbody>
-                    <tr v-for="(item, index) in itemsSliced" :key="item.id" style="width : 100%; overflow: clip">
+                    <tr v-for="(item, index) in itemsSliced.data" :key="item.id" style="width : 100%; overflow: clip">
                         <td>
                             {{ item.query_string }}
                         </td>
@@ -212,7 +219,7 @@ function save() {
             <Pagination :resource-meta="{
                 current_page: currentPage,
                 last_page: lastPage,
-                total: items.length,
+                total: itemsSliced.total
             }" :show-totals="false" :show-per-page-selector="false" @page-selected="setPage" />
         </Card>
         <div class="flex justify-between" :class="{ hidden: type == 'query-strings' }">
