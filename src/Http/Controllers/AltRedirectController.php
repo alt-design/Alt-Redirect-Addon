@@ -129,7 +129,7 @@ class AltRedirectController
         $values = $data->all();
 
         return redirect()->back()->with([
-            'data' => $values,
+            'items' => $values,
         ]);
     }
 
