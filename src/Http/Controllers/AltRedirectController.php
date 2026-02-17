@@ -4,6 +4,7 @@ namespace AltDesign\AltRedirect\Http\Controllers;
 
 use AltDesign\AltRedirect\Helpers\Data;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Statamic\Fields\Blueprint;
 use Statamic\Fields\BlueprintRepository;
 use Statamic\Filesystem\Manager;
@@ -28,8 +29,7 @@ class AltRedirectController
     // Work out what page we're handling
     public function __construct()
     {
-        $path = request()->path();
-        if (str_contains($path, 'query-strings')) {
+        if(collect([request()->path(), request()->input('type')])->filter(fn($value) => !empty($value) && str_contains($value, 'query-strings'))->isNotEmpty()) {
             $this->type = 'query-strings';
         }
     }
@@ -58,11 +58,11 @@ class AltRedirectController
             Blueprint::setDirectory($oldDirectory);
         }
 
-        return view('alt-redirect::index', [
+        return Inertia::render('alt-redirect::Index', [
             'blueprint' => $blueprint->toPublishArray(),
-            'values' => $fields->values(),
-            'meta' => $fields->meta(),
-            'data' => $values,
+            'initialValues' => $fields->values()->all(),
+            'initialMeta' => $fields->meta()->all(),
+            'items' => $values,
             'type' => $this->type,
             'action' => $this->actions[$this->type],
             'title' => $this->titles[$this->type],
@@ -103,11 +103,10 @@ class AltRedirectController
         $data->setAll($fields->process()->values()->toArray());
 
         $data = new Data($this->type);
-        $values = $data->all();
 
-        return [
-            'data' => $values,
-        ];
+        return redirect()->back()->with([
+            'items' => $data->all(),
+        ]);
     }
 
     public function delete(Request $request)
@@ -128,9 +127,9 @@ class AltRedirectController
         $data = new Data($this->type);
         $values = $data->all();
 
-        return [
-            'data' => $values,
-        ];
+        return redirect()->back()->with([
+            'items' => $values,
+        ]);
     }
 
     // Import and Export can stay hardcoded to redirects since I/O for Query Strings aren't supported atm
@@ -159,7 +158,9 @@ class AltRedirectController
 
     public function import(Request $request)
     {
-        $currentData = json_decode($request->get('data'), true);
+        $data = new Data($this->type);
+        $currentData = $data->all();
+
         $file = $request->file('file');
         $handle = fopen($file->path(), 'r');
         if ($handle !== false) {
@@ -192,6 +193,9 @@ class AltRedirectController
         $data = new Data('redirects');
         $data->saveAll($currentData);
 
+        return redirect()->back()->with([
+            'items' => $data->all(),
+        ]);
     }
 
     // Toggle a key in a certain item and return the data afterwards
@@ -220,8 +224,8 @@ class AltRedirectController
         $data = new Data($this->type);
         $values = $data->all();
 
-        return [
-            'data' => $values,
-        ];
+        return redirect()->back()->with([
+            'items' => $values,
+        ]);
     }
 }
