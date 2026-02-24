@@ -96,10 +96,9 @@ class CheckForRedirects
                 // Strip only parameters marked with strip:true, preserve all others
                 if (!in_array($normalizedKey, $stripKeys) && !isset($seenKeys[$normalizedKey])) {
                     $seenKeys[$normalizedKey] = true;
-                    $filteredStrings[] = sprintf("%s=%s", urlencode($key), urlencode($value));
+                    $filteredStrings[$key] = $value;
                 }
             }
-            $filteredStrings[$key] = $value;
         }
 
         $destinationUri = (new Uri($to))
