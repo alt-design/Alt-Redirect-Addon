@@ -15,7 +15,8 @@ const props = defineProps({
     type: String
 });
 
-const perPage = 10;
+const perPage = ref(10);
+const perPageOptions = [10, 25, 50, 100, 500];
 const currentPage = ref(1);
 const selectedFile = ref(null);
 const search = ref('');
@@ -26,7 +27,7 @@ const saving = ref(false);
 const container = ref('container');
 
 const lastPage = computed(() => {
-    return Math.ceil(itemsSliced.value.total / perPage);
+    return Math.max(1, Math.ceil(itemsSliced.value.total / perPage.value));
 });
 
 const itemsSliced = computed(() => {
@@ -34,15 +35,13 @@ const itemsSliced = computed(() => {
 
     if (search.value?.length > 0) {
         temp = temp.filter(item => {
-            // Convert all values to string and lower case for case-insensitive comparison
             let tempArr = Object.values(item).map(value => value?.toString().toLowerCase());
-            // Check if any value includes the search string
             return tempArr.some(value => value?.includes(search.value.toLowerCase()));
         });
     }
 
-    const start = (currentPage.value - 1) * perPage;
-    const end = start + perPage;
+    const start = (currentPage.value - 1) * perPage.value;
+    const end = start + perPage.value;
 
     return {
         total: temp.length,
@@ -137,7 +136,11 @@ function save() {
 }
 
 watch(search, () => {
-    setPage(1)
+    currentPage.value = 1;
+});
+
+watch(perPage, () => {
+    currentPage.value = 1;
 });
 
 </script>
@@ -157,8 +160,14 @@ watch(search, () => {
         <PublishContainer ref="container" :action="action" :blueprint="blueprint" :meta="meta" v-model="values" :errors="errors" />
 
         <Card class="overflow-hidden p-0">
-            <div class="my-4 pb-2 px-4">
-                <Input v-model="search" placeholder="Search" />
+            <div class="my-4 pb-2 px-4 flex items-center gap-4">
+                <Input v-model="search" placeholder="Search" class="flex-1" />
+                <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-sm text-gray-500">Per page</span>
+                    <select v-model.number="perPage" class="input-text text-sm">
+                        <option v-for="option in perPageOptions" :key="option" :value="option">{{ option }}</option>
+                    </select>
+                </div>
             </div>
             <div class="px-2">
                 <table v-if="type == 'redirects'" data-size="sm" tabindex="0" class="data-table" style="table-layout: fixed">
