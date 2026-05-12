@@ -1,15 +1,20 @@
-<?php namespace AltDesign\AltRedirect;
+<?php
 
-use Statamic\Providers\AddonServiceProvider;
+namespace AltDesign\AltRedirect;
+
+use AltDesign\AltRedirect\Console\Commands\DefaultQueryStringsCommand;
+use AltDesign\AltRedirect\Console\Commands\MigrateFileRedirectsCommand;
+use AltDesign\AltRedirect\Console\Commands\ReScanRegexCommand;
+use AltDesign\AltRedirect\Contracts\RepositoryInterface;
+use AltDesign\AltRedirect\Helpers\DefaultQueryStrings;
+use AltDesign\AltRedirect\Http\Middleware\CheckForRedirects;
+use AltDesign\AltRedirect\Repositories\RepositoryManager;
+use Illuminate\Support\Str;
 use Statamic\Facades\CP\Nav;
 use Statamic\Facades\Permission;
 use Statamic\Filesystem\Manager;
+use Statamic\Providers\AddonServiceProvider;
 use Statamic\StaticSite\SSG;
-use Illuminate\Support\Str;
-
-use AltDesign\AltRedirect\Console\Commands\DefaultQueryStringsCommand;
-use AltDesign\AltRedirect\Helpers\DefaultQueryStrings;
-use AltDesign\AltRedirect\Helpers\Data;
 
 class ServiceProvider extends AddonServiceProvider
 {
@@ -20,23 +25,21 @@ class ServiceProvider extends AddonServiceProvider
     protected $vite = [
         'input' => [
             'resources/js/alt-redirect-addon.js',
-            'resources/css/alt-redirect-addon.css'
+            'resources/css/alt-redirect-addon.css',
         ],
         'publicDirectory' => 'resources/dist',
     ];
 
     protected $middlewareGroups = [
         'web' => [
-            \AltDesign\AltRedirect\Http\Middleware\CheckForRedirects::class,
-        ]
+            CheckForRedirects::class,
+        ],
     ];
 
     /**
      * Register our addon and child menus in the nav
-     *
-     * @return self
      */
-    public function addToNav() : self
+    public function addToNav(): self
     {
         Nav::extend(function ($nav) {
             $nav->content('Alt Redirect')
@@ -54,73 +57,71 @@ class ServiceProvider extends AddonServiceProvider
 
     /**
      * Register our permissions, so we can control who can see the settings.
-     *
-     * @return self
      */
-    public function registerPermissions() : self
+    public function registerPermissions(): self
     {
         Permission::register('view alt-redirect')
-                  ->label('View Alt Redirect Settings');
+            ->label('View Alt Redirect Settings');
 
         return $this;
     }
 
     /**
      * Register our artisan commands
-     *
-     * @return self
      */
-    public function registerCommands() : self
+    public function registerCommands(): self
     {
         $this->commands([
             DefaultQueryStringsCommand::class,
+            MigrateFileRedirectsCommand::class,
+            ReScanRegexCommand::class,
         ]);
+
         return $this;
     }
 
-    /**
-     * Install the default query strings
-     *
-     * @return self
-     */
-    public function installDefaultQueryStrings() : self
+    public function installDefaultQueryStrings(): self
     {
-        // create the standard
-        if ($this->app->runningInConsole()) {
-            $disk = (new Manager())->disk();
-            if (!$disk->exists('content/alt-redirect/.installed')) {
-                (new DefaultQueryStrings)->makeDefaultQueryStrings();
-            }
+        if (config('alt-redirect.driver') !== 'file') {
+            return $this;
         }
+
+        // create the standard
+        $disk = (new Manager)->disk();
+        if (! $disk->exists('content/alt-redirect/.installed')) {
+            (new DefaultQueryStrings)->makeDefaultQueryStrings();
+            $disk->put('content/alt-redirect/.installed', '');
+        }
+
         return $this;
     }
 
-    public function configureSSG() : self
+    public function configureSSG(): self
     {
-        if (!class_exists(SSG::class)) {
+        if (! class_exists(SSG::class)) {
             return $this;
         }
 
         SSG::after(function () {
             $dest = config('statamic.ssg.destination');
             $base = rtrim(config('statamic.ssg.base_url'), '/'); // remove trailing slash
-            $disk = (new Manager())->disk();
+            $disk = (new Manager)->disk();
 
-            $redirects = (new Data('redirects'))->all();
-            print("Found " . count($redirects) . " redirects\n");
+            $redirects = app(RepositoryInterface::class)->all('redirects');
+            echo 'Found '.count($redirects)." redirects\n";
 
             $generated = $directories = 0;
-            foreach( $redirects as $redirect ) {
-                $fromDir = $dest . $redirect['from'];
+            foreach ($redirects as $redirect) {
+                $fromDir = $dest.$redirect['from'];
                 $from = sprintf('%s%sindex.html',
                     $fromDir,
                     (Str::endsWith($fromDir, '/') ? '' : '/')
                 );
-                $to = $base . $redirect['to'];
+                $to = $base.$redirect['to'];
 
-                if (!$disk->exists($from)) {
+                if (! $disk->exists($from)) {
                     $contents = view('alt-redirect::ssg', ['to' => $to]);
-                    if (!$disk->isDirectory($fromDir)) {
+                    if (! $disk->isDirectory($fromDir)) {
                         mkdir($fromDir, 0777, true);
                         $directories++;
                     }
@@ -130,17 +131,45 @@ class ServiceProvider extends AddonServiceProvider
                 }
             }
 
-            print("Generated $generated redirect files in $directories new directories\n");
+            echo "Generated $generated redirect files in $directories new directories\n";
         });
+
         return $this;
+    }
+
+    public function register()
+    {
+        parent::register();
+
+        $this->mergeConfigFrom(__DIR__.'/../config/alt-redirect.php', 'alt-redirect');
+
+        $this->app->singleton(RepositoryManager::class, function ($app) {
+            return new RepositoryManager($app);
+        });
+
+        $this->app->bind(RepositoryInterface::class, function ($app) {
+            return $app->make(RepositoryManager::class)->driver();
+        });
     }
 
     public function bootAddon()
     {
+        if ($this->app->runningInConsole()) {
+            $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
+
+            $this->publishes([
+                __DIR__.'/../config/alt-redirect.php' => config_path('alt-redirect.php'),
+            ], 'alt-redirect-config');
+
+            $this->publishes([
+                __DIR__.'/Database/Migrations' => database_path('migrations'),
+            ], 'alt-redirect-migrations');
+        }
+
         $this->addToNav()
             ->registerPermissions()
             ->registerCommands()
-            ->configureSSG();
+            ->configureSSG()
+            ->installDefaultQueryStrings();
     }
 }
-

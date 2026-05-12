@@ -61,6 +61,19 @@ tabs:
               width: 50
               default: '301'
           -
+            handle: is_regex
+            field:
+              type: toggle
+              display: 'Is Regex?'
+              instructions: 'Automatically detected, but can be overridden.'
+              listable: hidden
+              instructions_position: above
+              visibility: visible
+              replicator_preview: true
+              hide_display: false
+              width: 50
+              default: false
+          -
             handle: sites
             field:
               mode: select

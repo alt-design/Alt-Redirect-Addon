@@ -83,6 +83,46 @@ On this page you can manage the query strings you wish to strip, simply :
 
 You'll see your query string in the list.
 
+### Database Redirects
+
+By default, the addon stores redirects and query strings as YAML files in `content/alt-redirect/`. For containerised deployments or larger sites, you may wish to store these in your database instead.
+
+#### 1. Publish Configuration
+If you haven't already, publish the configuration file to your site:
+
+```bash
+php artisan vendor:publish --tag=alt-redirect-config
+```
+
+#### 2. Run Migrations
+While migrations are loaded automatically, you can publish them if you wish to customize them:
+
+```bash
+php artisan vendor:publish --tag=alt-redirect-migrations
+```
+
+Run the migrations to create the necessary tables:
+
+```bash
+php artisan migrate
+```
+
+#### 3. Switch Driver
+In your `config/alt-redirect.php`, change the `driver` from `file` to `database`:
+
+```php
+'driver' => 'database',
+```
+
+#### 4. Migrate Existing Data (Optional)
+If you already have file-based redirects and want to move them to your database, you can use the following Artisan command:
+
+```bash
+php artisan alt-redirect:migrate-file-redirects
+```
+
+The command will check if the required tables exist and then migrate all your redirects and query strings.
+
 #### Artisan Command
 
 We have provided an Artisan command to force the creation of defaults.

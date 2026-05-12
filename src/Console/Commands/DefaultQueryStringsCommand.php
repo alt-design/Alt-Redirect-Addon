@@ -26,7 +26,7 @@ class DefaultQueryStringsCommand extends Command
      */
     public function handle()
     {
-        if(!$this->confirm('Do you wish to (re)create the list of default query strings?')) {
+        if (! $this->confirm('Do you wish to (re)create the list of default query strings?')) {
             $this->error('User aborted Command');
         }
 

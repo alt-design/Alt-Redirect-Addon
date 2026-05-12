@@ -16,6 +16,19 @@ return [
     |
     */
 
-    'headers' => []
+    'headers' => [],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Driver
+    |--------------------------------------------------------------------------
+    |
+    | Here you may specify the driver to use for storing redirects.
+    |
+    | Supported: "file", "database"
+    |
+    */
+
+    'driver' => 'file',
+    // 'driver' => 'database',
 ];
