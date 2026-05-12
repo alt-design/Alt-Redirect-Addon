@@ -4,10 +4,12 @@ namespace AltDesign\AltRedirect\Http\Middleware;
 
 use AltDesign\AltRedirect\Contracts\RepositoryInterface;
 use AltDesign\AltRedirect\Helpers\URISupport;
+use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\Request;
+use Illuminate\Support\Uri;
 use Closure;
 use Illuminate\Http\Request;
 use Statamic\Facades\Site;
-use Symfony\Component\HttpFoundation\Response;
 
 class CheckForRedirects
 {
@@ -107,16 +109,14 @@ class CheckForRedirects
                 // Strip only parameters marked with strip:true, preserve all others
                 if (! in_array($normalizedKey, $stripKeys) && ! isset($seenKeys[$normalizedKey])) {
                     $seenKeys[$normalizedKey] = true;
-                    $filteredStrings[] = sprintf('%s=%s', urlencode($key), urlencode($value));
+                    $filteredStrings[$key] = $value;
                 }
             }
         }
 
-        if ($filteredStrings) {
-            $to .= str_contains($to, '?') ? '&' : '?';
-            $to .= implode('&', $filteredStrings);
-        }
+        $destinationUri = (new Uri($to))
+            ->withQuery($filteredStrings);
 
-        return redirect($to, $status, config('alt-redirect.headers', []));
+        return redirect((string) $destinationUri , $status, config('alt-redirect.headers', []));
     }
 }
