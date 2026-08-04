@@ -152,3 +152,46 @@ it('can delete a query string', function () {
     // Check it's gone
     expect($repository->find('query-strings', 'query_string', 'gclid-delete'))->toBeNull();
 });
+
+it('can redirect a simple unicode path', function () {
+    $repository = app(RepositoryInterface::class);
+    $repository->save('redirects', [
+        'id' => 'simple-unicode-file',
+        'from' => '/unicode-テスト',
+        'to' => '/target',
+        'redirect_type' => 301,
+        'sites' => ['default'],
+    ]);
+
+    // Test with URL encoded path
+    $this->get('/unicode-%E3%83%86%E3%82%B9%E3%83%88')
+        ->assertRedirect('/target')
+        ->assertStatus(301);
+
+    // Test with raw unicode path
+    $this->get('/unicode-テスト')
+        ->assertRedirect('/target')
+        ->assertStatus(301);
+});
+
+it('can redirect a regex unicode path', function () {
+    $repository = app(RepositoryInterface::class);
+    $repository->save('redirects', [
+        'id' => 'regex-unicode-file',
+        'from' => '^/unicode-テスト/([^/]+)/?$',
+        'to' => '/target/$1',
+        'redirect_type' => 301,
+        'sites' => ['default'],
+    ]);
+
+    // Test with URL encoded path
+    $this->get('/unicode-%E3%83%86%E3%82%B9%E3%83%88/something')
+        ->assertRedirect('/target/something')
+        ->assertStatus(301);
+
+    // Test with raw unicode path
+    $this->get('/unicode-テスト/something')
+        ->assertRedirect('/target/something')
+        ->assertStatus(301);
+});
+
