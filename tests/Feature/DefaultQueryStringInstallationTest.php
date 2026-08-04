@@ -7,7 +7,8 @@ it('does NOT create the installed marker if using database driver', function () 
     config(['alt-redirect.driver' => 'database']);
 
     $disk = (new Manager)->disk();
-    $markerPath = 'content/alt-redirect/.installed';
+    $rootPath = rtrim(config('alt-redirect.root_path', 'content/alt-redirect'), '/');
+    $markerPath = $rootPath . '/.installed';
 
     // 1. Ensure marker is gone
     if ($disk->exists($markerPath)) {

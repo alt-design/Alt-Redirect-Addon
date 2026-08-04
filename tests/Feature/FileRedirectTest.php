@@ -7,6 +7,22 @@ beforeEach(function () {
     config(['alt-redirect.driver' => 'file']);
 });
 
+afterEach(function () {
+    $customDir = __DIR__.'/../__fixtures__/storage/custom/alt-redirect';
+    if (file_exists($customDir)) {
+        $deleteDir = function ($dir) use (&$deleteDir) {
+            if (!file_exists($dir)) return true;
+            if (!is_dir($dir)) return unlink($dir);
+            foreach (scandir($dir) as $item) {
+                if ($item == '.' || $item == '..') continue;
+                if (!$deleteDir($dir . DIRECTORY_SEPARATOR . $item)) return false;
+            }
+            return rmdir($dir);
+        };
+        $deleteDir($customDir);
+    }
+});
+
 it('can redirect a simple path', function () {
     $repository = app(RepositoryInterface::class);
     $repository->save('redirects', [
@@ -151,4 +167,28 @@ it('can delete a query string', function () {
 
     // Check it's gone
     expect($repository->find('query-strings', 'query_string', 'gclid-delete'))->toBeNull();
+});
+
+it('can set custom root path in configuration', function () {
+    config(['alt-redirect.root_path' => 'custom/alt-redirect']);
+    
+    // We instantiate a new FileRepository to pick up the new configuration
+    $repository = new \AltDesign\AltRedirect\Repositories\FileRepository();
+    
+    $repository->save('redirects', [
+        'id' => 'custom-path-test',
+        'from' => '/custom-old-path',
+        'to' => '/custom-new-path',
+        'redirect_type' => 301,
+        'sites' => ['default'],
+    ]);
+
+    // Verify it exists in the custom path
+    $disk = (new \Statamic\Filesystem\Manager)->disk();
+    expect($disk->exists('custom/alt-redirect/' . hash('sha512', base64_encode('/custom-old-path')) . '.yaml'))->toBeTrue();
+
+    // Verify it redirects
+    $this->get('/custom-old-path')
+        ->assertRedirect('/custom-new-path')
+        ->assertStatus(301);
 });

@@ -31,4 +31,18 @@ return [
 
     'driver' => 'file',
     // 'driver' => 'database',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Root Path
+    |--------------------------------------------------------------------------
+    |
+    | The path where redirects and query strings are stored as YAML files
+    | when using the "file" driver.
+    |
+    | Default: 'content/alt-redirect'
+    |
+    */
+
+    'root_path' => 'content/alt-redirect',
 ];
