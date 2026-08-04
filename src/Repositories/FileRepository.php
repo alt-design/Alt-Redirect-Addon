@@ -11,18 +11,23 @@ class FileRepository implements RepositoryInterface
 {
     protected Manager $manager;
 
-    protected array $paths = [
-        'redirects' => [
-            'content/alt-redirect',
-            'content/alt-redirect/alt-regex',
-        ],
-        'query-strings' => [
-            'content/alt-redirect/query-strings',
-        ],
-    ];
+    protected string $rootPath;
+
+    protected array $paths = [];
 
     public function __construct()
     {
+        $this->rootPath = rtrim(config('alt-redirect.root_path', 'content/alt-redirect'), '/');
+        $this->paths = [
+            'redirects' => [
+                $this->rootPath,
+                $this->rootPath . '/alt-regex',
+            ],
+            'query-strings' => [
+                $this->rootPath . '/query-strings',
+            ],
+        ];
+
         $this->manager = new Manager;
         $this->checkOrMakeDirectories();
     }
@@ -61,11 +66,11 @@ class FileRepository implements RepositoryInterface
         }
 
         $disk = $this->manager->disk();
-        if (! $disk->exists('content/alt-redirect/alt-regex')) {
+        if (! $disk->exists($this->rootPath . '/alt-regex')) {
             return [];
         }
 
-        $allRegexRedirects = $disk->getFilesRecursively('content/alt-redirect/alt-regex')->all();
+        $allRegexRedirects = $disk->getFilesRecursively($this->rootPath . '/alt-regex')->all();
         $allRegexRedirects = collect($allRegexRedirects)->sortBy(function ($file) use ($disk) {
             return $disk->lastModified($file);
         });
@@ -83,8 +88,8 @@ class FileRepository implements RepositoryInterface
         if ($type === 'redirects' && $key === 'from') {
             $b64 = base64_encode($value);
             $possibleFiles = [
-                'content/alt-redirect/'.$b64.'.yaml',
-                'content/alt-redirect/'.hash('sha512', $b64).'.yaml',
+                $this->rootPath . '/' . $b64 . '.yaml',
+                $this->rootPath . '/' . hash('sha512', $b64) . '.yaml',
             ];
 
             foreach ($possibleFiles as $file) {
@@ -107,14 +112,14 @@ class FileRepository implements RepositoryInterface
                     return;
                 }
                 if (! URISupport::isRegex($data['from'])) {
-                    $this->manager->disk()->put('content/alt-redirect/'.hash('sha512', (base64_encode($data['from']))).'.yaml', YAML::dump($data));
+                    $this->manager->disk()->put($this->rootPath . '/' . hash('sha512', (base64_encode($data['from']))) . '.yaml', YAML::dump($data));
 
                     return;
                 }
-                $this->manager->disk()->put('content/alt-redirect/alt-regex/'.hash('sha512', base64_encode($data['id'])).'.yaml', YAML::dump($data));
+                $this->manager->disk()->put($this->rootPath . '/alt-regex/' . hash('sha512', base64_encode($data['id'])) . '.yaml', YAML::dump($data));
                 break;
             case 'query-strings':
-                $this->manager->disk()->put('content/alt-redirect/query-strings/'.hash('sha512', (base64_encode($data['query_string']))).'.yaml', YAML::dump($data));
+                $this->manager->disk()->put($this->rootPath . '/query-strings/' . hash('sha512', (base64_encode($data['query_string']))) . '.yaml', YAML::dump($data));
                 break;
         }
     }
@@ -137,21 +142,21 @@ class FileRepository implements RepositoryInterface
         switch ($type) {
             case 'redirects':
                 if (isset($data['from'])) {
-                    $disk->delete('content/alt-redirect/'.hash('sha512', base64_encode($data['from'])).'.yaml');
-                    $disk->delete('content/alt-redirect/'.base64_encode($data['from']).'.yaml');
+                    $disk->delete($this->rootPath . '/' . hash('sha512', base64_encode($data['from'])) . '.yaml');
+                    $disk->delete($this->rootPath . '/' . base64_encode($data['from']) . '.yaml');
                 }
                 if (isset($data['id'])) {
-                    $disk->delete('content/alt-redirect/alt-regex/'.hash('sha512', base64_encode($data['id'])).'.yaml');
-                    $disk->delete('content/alt-redirect/alt-regex/'.base64_encode($data['id']).'.yaml');
+                    $disk->delete($this->rootPath . '/alt-regex/' . hash('sha512', base64_encode($data['id'])) . '.yaml');
+                    $disk->delete($this->rootPath . '/alt-regex/' . base64_encode($data['id']) . '.yaml');
                 }
                 break;
             case 'query-strings':
                 if (isset($data['query_string'])) {
-                    $disk->delete('content/alt-redirect/query-strings/'.hash('sha512', base64_encode($data['query_string'])).'.yaml');
+                    $disk->delete($this->rootPath . '/query-strings/' . hash('sha512', base64_encode($data['query_string'])) . '.yaml');
                 } elseif (isset($data['id'])) {
                     $item = $this->find($type, 'id', $data['id']);
                     if ($item && isset($item['query_string'])) {
-                        $disk->delete('content/alt-redirect/query-strings/'.hash('sha512', base64_encode($item['query_string'])).'.yaml');
+                        $disk->delete($this->rootPath . '/query-strings/' . hash('sha512', base64_encode($item['query_string'])) . '.yaml');
                     }
                 }
                 break;
