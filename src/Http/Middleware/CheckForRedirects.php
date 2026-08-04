@@ -22,17 +22,32 @@ class CheckForRedirects
 
         // Grab path, make alternate / permutation
         $pathOnly = URISupport::path();
+        $pathOnlyDecoded = rawurldecode($pathOnly);
+
         if (str_ends_with($pathOnly, '/')) {
             $permuPathOnly = substr($pathOnly, 0, strlen($pathOnly) - 1);
         } else {
             $permuPathOnly = $pathOnly.'/';
         }
 
+        if (str_ends_with($pathOnlyDecoded, '/')) {
+            $permuPathOnlyDecoded = substr($pathOnlyDecoded, 0, strlen($pathOnlyDecoded) - 1);
+        } else {
+            $permuPathOnlyDecoded = $pathOnlyDecoded.'/';
+        }
+
         $path = URISupport::uriWithFilteredQueryStrings($pathOnly);
         $permuPath = URISupport::uriWithFilteredQueryStrings($permuPathOnly);
 
+        $pathDecoded = URISupport::uriWithFilteredQueryStrings($pathOnlyDecoded);
+        $permuPathDecoded = URISupport::uriWithFilteredQueryStrings($permuPathOnlyDecoded);
+
         // Check simple redirects
-        $redirect = $repository->find('redirects', 'from', $path) ??
+        $redirect = $repository->find('redirects', 'from', $pathDecoded) ??
+                    $repository->find('redirects', 'from', $permuPathDecoded) ??
+                    $repository->find('redirects', 'from', $pathOnlyDecoded) ??
+                    $repository->find('redirects', 'from', $permuPathOnlyDecoded) ??
+                    $repository->find('redirects', 'from', $path) ??
                     $repository->find('redirects', 'from', $permuPath) ??
                     $repository->find('redirects', 'from', $pathOnly) ??
                     $repository->find('redirects', 'from', $permuPathOnly);
@@ -40,7 +55,8 @@ class CheckForRedirects
         if ($redirect) {
             $to = $redirect['to'] ?? '/';
             // There's no need to redirect.
-            if ($to === $path || $to === $permuPath || $to === $pathOnly || $to === $permuPathOnly) {
+            if ($to === $path || $to === $permuPath || $to === $pathOnly || $to === $permuPathOnly ||
+                $to === $pathDecoded || $to === $permuPathDecoded || $to === $pathOnlyDecoded || $to === $permuPathOnlyDecoded) {
                 return $next($request);
             }
             if (! ($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
@@ -50,20 +66,33 @@ class CheckForRedirects
 
         // Regex checks
         $uri = URISupport::uriWithFilteredQueryStrings();
+        $uriDecoded = rawurldecode($uri);
+
         foreach ($repository->getRegex('redirects') as $redirect) {
             $from = $redirect['from'];
 
             // Determine if the pattern is already delimited
             $isDelimited = @preg_match($from, '') !== false;
-            $pattern = $isDelimited ? $from : '#' . $from . '#';
+            $pattern = $isDelimited ? $from : '#' . $from . '#u';
 
             // Handle the ? hack for non-delimited patterns
-            if (!$isDelimited && ! preg_match($pattern, $uri) && strpos($from, '?') !== false && strpos($from, '\?') === false) {
-                $pattern = '#' . str_replace('?', '\?', $from) . '#';
+            if (!$isDelimited && ! preg_match($pattern, $uriDecoded) && ! preg_match($pattern, $uri) && strpos($from, '?') !== false && strpos($from, '\?') === false) {
+                $pattern = '#' . str_replace('?', '\?', $from) . '#u';
             }
 
-            if (preg_match($pattern, $uri)) {
-                $redirectTo = preg_replace($pattern, $redirect['to'], $uri);
+            $matched = false;
+            $subject = $uriDecoded;
+
+            if (preg_match($pattern, $uriDecoded)) {
+                $matched = true;
+                $subject = $uriDecoded;
+            } elseif (preg_match($pattern, $uri)) {
+                $matched = true;
+                $subject = $uri;
+            }
+
+            if ($matched) {
+                $redirectTo = preg_replace($pattern, $redirect['to'], $subject);
                 if (! ($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
                     return $this->redirectWithPreservedParams($redirectTo ?? '/', $redirect['redirect_type'] ?? 301);
                 }
