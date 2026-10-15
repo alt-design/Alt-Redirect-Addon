@@ -9,22 +9,6 @@ beforeEach(function () {
     config(['alt-redirect.driver' => 'file']);
 });
 
-afterEach(function () {
-    $customDir = __DIR__.'/../__fixtures__/storage/custom/alt-redirect';
-    if (file_exists($customDir)) {
-        $deleteDir = function ($dir) use (&$deleteDir) {
-            if (!file_exists($dir)) return true;
-            if (!is_dir($dir)) return unlink($dir);
-            foreach (scandir($dir) as $item) {
-                if ($item == '.' || $item == '..') continue;
-                if (!$deleteDir($dir . DIRECTORY_SEPARATOR . $item)) return false;
-            }
-            return rmdir($dir);
-        };
-        $deleteDir($customDir);
-    }
-});
-
 it('can redirect a simple path', function () {
     $repository = app(RepositoryInterface::class);
     $repository->save('redirects', [
