@@ -60,8 +60,12 @@ abstract class TestCase extends AddonTestCase
 
     protected function tearDown(): void
     {
-        if (file_exists(__DIR__.'/__fixtures__/storage/content/alt-redirect')) {
-            $this->deleteDirectory(__DIR__.'/__fixtures__/storage/content/alt-redirect');
+        $rootPath = trim(config('alt-redirect.root_path', 'content/alt-redirect'), '/\\');
+        $rootPath = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $rootPath);
+        $storagePath = __DIR__.'/__fixtures__/storage/'.$rootPath;
+
+        if (file_exists($storagePath)) {
+            $this->deleteDirectory($storagePath);
         }
 
         parent::tearDown();

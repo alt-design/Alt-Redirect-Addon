@@ -1,6 +1,8 @@
 <?php
 
 use AltDesign\AltRedirect\Contracts\RepositoryInterface;
+use AltDesign\AltRedirect\Repositories\RepositoryManager;
+use Statamic\Facades\File;
 use Statamic\Facades\Site;
 
 beforeEach(function () {
@@ -171,10 +173,10 @@ it('can delete a query string', function () {
 
 it('can set custom root path in configuration', function () {
     config(['alt-redirect.root_path' => 'custom/alt-redirect']);
-    
-    // We instantiate a new FileRepository to pick up the new configuration
-    $repository = new \AltDesign\AltRedirect\Repositories\FileRepository();
-    
+    app(RepositoryManager::class)->forgetDrivers();
+
+    $repository = app(RepositoryInterface::class);
+
     $repository->save('redirects', [
         'id' => 'custom-path-test',
         'from' => '/custom-old-path',
@@ -183,11 +185,9 @@ it('can set custom root path in configuration', function () {
         'sites' => ['default'],
     ]);
 
-    // Verify it exists in the custom path
-    $disk = (new \Statamic\Filesystem\Manager)->disk();
-    expect($disk->exists('custom/alt-redirect/' . hash('sha512', base64_encode('/custom-old-path')) . '.yaml'))->toBeTrue();
+    $expectedPath = 'custom/alt-redirect/'.hash('sha512', base64_encode('/custom-old-path')).'.yaml';
+    expect(File::disk()->exists($expectedPath))->toBeTrue();
 
-    // Verify it redirects
     $this->get('/custom-old-path')
         ->assertRedirect('/custom-new-path')
         ->assertStatus(301);
