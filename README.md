@@ -83,9 +83,25 @@ On this page you can manage the query strings you wish to strip, simply :
 
 You'll see your query string in the list.
 
+### File Storage Location
+
+By default, the file driver stores redirects and query strings as YAML files in `content/alt-redirect/`.
+
+To use a different location, publish the configuration file:
+
+```bash
+php artisan vendor:publish --tag=alt-redirect-config
+```
+
+Then update `root_path` in `config/alt-redirect.php`:
+
+```php
+'root_path' => 'storage/content/alt-redirect',
+```
+
 ### Database Redirects
 
-By default, the addon stores redirects and query strings as YAML files in `content/alt-redirect/`. For containerised deployments or larger sites, you may wish to store these in your database instead.
+For containerised deployments or larger sites, you may wish to store redirects and query strings in your database instead.
 
 #### 1. Publish Configuration
 If you haven't already, publish the configuration file to your site:
@@ -164,4 +180,3 @@ St Helens House
 Derby  
 DE1 3EE  
 UK  
-

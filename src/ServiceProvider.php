@@ -88,9 +88,10 @@ class ServiceProvider extends AddonServiceProvider
 
         // create the standard
         $disk = (new Manager)->disk();
-        if (! $disk->exists('content/alt-redirect/.installed')) {
+        $rootPath = rtrim(config('alt-redirect.root_path', 'content/alt-redirect'), '/');
+        if (! $disk->exists($rootPath . '/.installed')) {
             (new DefaultQueryStrings)->makeDefaultQueryStrings();
-            $disk->put('content/alt-redirect/.installed', '');
+            $disk->put($rootPath . '/.installed', '');
         }
 
         return $this;

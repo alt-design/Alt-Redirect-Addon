@@ -1,6 +1,8 @@
 <?php
 
 use AltDesign\AltRedirect\Contracts\RepositoryInterface;
+use AltDesign\AltRedirect\Repositories\RepositoryManager;
+use Statamic\Facades\File;
 use Statamic\Facades\Site;
 
 beforeEach(function () {
@@ -151,4 +153,26 @@ it('can delete a query string', function () {
 
     // Check it's gone
     expect($repository->find('query-strings', 'query_string', 'gclid-delete'))->toBeNull();
+});
+
+it('can set custom root path in configuration', function () {
+    config(['alt-redirect.root_path' => 'custom/alt-redirect']);
+    app(RepositoryManager::class)->forgetDrivers();
+
+    $repository = app(RepositoryInterface::class);
+
+    $repository->save('redirects', [
+        'id' => 'custom-path-test',
+        'from' => '/custom-old-path',
+        'to' => '/custom-new-path',
+        'redirect_type' => 301,
+        'sites' => ['default'],
+    ]);
+
+    $expectedPath = 'custom/alt-redirect/'.hash('sha512', base64_encode('/custom-old-path')).'.yaml';
+    expect(File::disk()->exists($expectedPath))->toBeTrue();
+
+    $this->get('/custom-old-path')
+        ->assertRedirect('/custom-new-path')
+        ->assertStatus(301);
 });

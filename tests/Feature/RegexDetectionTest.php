@@ -108,7 +108,8 @@ it('handles file driver regex detection correctly', function () {
     ]);
 
     // If it's NOT regex, it should be saved with a hashed filename
-    $expectedPath = 'content/alt-redirect/'.hash('sha512', base64_encode($url)).'.yaml';
+    $rootPath = rtrim(config('alt-redirect.root_path', 'content/alt-redirect'), '/');
+    $expectedPath = $rootPath . '/' . hash('sha512', base64_encode($url)) . '.yaml';
     expect(File::disk()->exists($expectedPath))->toBeTrue();
 });
 
