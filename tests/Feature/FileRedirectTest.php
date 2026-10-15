@@ -195,3 +195,17 @@ it('can redirect a regex unicode path', function () {
         ->assertStatus(301);
 });
 
+it('preserves encoded reserved characters in regex replacements', function () {
+    $repository = app(RepositoryInterface::class);
+    $repository->save('redirects', [
+        'id' => 'encoded-reserved-file',
+        'from' => '^/old/(.*)$',
+        'to' => '/new/$1',
+        'redirect_type' => 301,
+        'sites' => ['default'],
+    ]);
+
+    $this->get('/old/a%3Fb')
+        ->assertRedirect('/new/a%3Fb')
+        ->assertStatus(301);
+});
