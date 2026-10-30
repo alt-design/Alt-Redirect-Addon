@@ -30,17 +30,29 @@ class CheckForRedirects
 
         $path = URISupport::uriWithFilteredQueryStrings($pathOnly);
         $permuPath = URISupport::uriWithFilteredQueryStrings($permuPathOnly);
+        $candidates = array_values(array_unique([
+            $path,
+            $permuPath,
+            $pathOnly,
+            $permuPathOnly,
+            $this->decodeUnicodeEscapes($path),
+            $this->decodeUnicodeEscapes($permuPath),
+            $this->decodeUnicodeEscapes($pathOnly),
+            $this->decodeUnicodeEscapes($permuPathOnly),
+        ]));
 
         // Check simple redirects
-        $redirect = $repository->find('redirects', 'from', $path) ??
-                    $repository->find('redirects', 'from', $permuPath) ??
-                    $repository->find('redirects', 'from', $pathOnly) ??
-                    $repository->find('redirects', 'from', $permuPathOnly);
+        $redirect = null;
+        foreach ($candidates as $candidate) {
+            if ($redirect = $repository->find('redirects', 'from', $candidate)) {
+                break;
+            }
+        }
 
         if ($redirect) {
             $to = $redirect['to'] ?? '/';
             // There's no need to redirect.
-            if ($to === $path || $to === $permuPath || $to === $pathOnly || $to === $permuPathOnly) {
+            if (in_array($to, $candidates, true)) {
                 return $next($request);
             }
             if (! ($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
@@ -50,28 +62,52 @@ class CheckForRedirects
 
         // Regex checks
         $uri = URISupport::uriWithFilteredQueryStrings();
+        $subjects = array_values(array_unique([$uri, $this->decodeUnicodeEscapes($uri)]));
+
         foreach ($repository->getRegex('redirects') as $redirect) {
             $from = $redirect['from'];
 
             // Determine if the pattern is already delimited
             $isDelimited = @preg_match($from, '') !== false;
-            $pattern = $isDelimited ? $from : '#' . $from . '#';
+            $pattern = $isDelimited ? $from : '#'.$from.'#u';
 
             // Handle the ? hack for non-delimited patterns
-            if (!$isDelimited && ! preg_match($pattern, $uri) && strpos($from, '?') !== false && strpos($from, '\?') === false) {
-                $pattern = '#' . str_replace('?', '\?', $from) . '#';
+            if (! $isDelimited && ! $this->matchesAny($pattern, $subjects) && strpos($from, '?') !== false && strpos($from, '\?') === false) {
+                $pattern = '#'.str_replace('?', '\?', $from).'#u';
             }
 
-            if (preg_match($pattern, $uri)) {
-                $redirectTo = preg_replace($pattern, $redirect['to'], $uri);
-                if (! ($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
-                    return $this->redirectWithPreservedParams($redirectTo ?? '/', $redirect['redirect_type'] ?? 301);
+            foreach ($subjects as $subject) {
+                if (preg_match($pattern, $subject)) {
+                    $redirectTo = preg_replace($pattern, $redirect['to'], $subject);
+                    if (! ($redirect['sites'] ?? false) || (in_array(Site::current(), $redirect['sites']))) {
+                        return $this->redirectWithPreservedParams($redirectTo ?? '/', $redirect['redirect_type'] ?? 301);
+                    }
                 }
             }
         }
 
         // No redirect
         return $next($request);
+    }
+
+    private function decodeUnicodeEscapes(string $uri): string
+    {
+        return preg_replace_callback(
+            '/(?:%[89a-f][0-9a-f])+/i',
+            fn (array $matches) => rawurldecode($matches[0]),
+            $uri
+        ) ?? $uri;
+    }
+
+    private function matchesAny(string $pattern, array $subjects): bool
+    {
+        foreach ($subjects as $subject) {
+            if (preg_match($pattern, $subject)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function redirectWithPreservedParams($to, $status)

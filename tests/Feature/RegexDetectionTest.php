@@ -88,6 +88,7 @@ it('still flags actual regex as regex', function ($url) {
     '/test/\d+',
     '#/products/(.*)#',
     '/^foo$/i',
+    '^/unicode-テスト/([^/]+)/?$',
 ]);
 
 it('handles file driver regex detection correctly', function () {
