@@ -53,6 +53,11 @@ abstract class TestCase extends AddonTestCase
 
     protected function setUp(): void
     {
+        // On macOS, parse_url() treats bytes 0x80-0x9F as control characters under a UTF-8
+        // LC_CTYPE and replaces them with "_", which mangles raw unicode paths built by
+        // Request::create(). Linux and real server requests are unaffected.
+        setlocale(LC_CTYPE, 'C');
+
         parent::setUp();
 
         Site::setSites(config('statamic.sites'));
