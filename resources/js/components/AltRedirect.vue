@@ -1,7 +1,7 @@
 <script setup>
 import { Header, Heading, Subheading, PublishContainer, Button, Switch, Card, Input, Pagination } from '@statamic/cms/ui';
 import { Pipeline, BeforeSaveHooks, Request, AfterSaveHooks } from '@statamic/cms/save-pipeline'; 
-import { router } from '@statamic/cms/inertia'
+import { Head, router } from '@statamic/cms/inertia'
 import { computed, ref, watch } from 'vue'; 
 
 const props = defineProps({
@@ -147,6 +147,7 @@ watch(perPage, () => {
 
 <template>
     <div id="alt-redirect">
+        <Head :title="title" />
         <Header :title="title">
             <template #title>
                 <div>
